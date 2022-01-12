@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icons from 'react-native-vector-icons/AntDesign';
 import * as MalaysiaPostcodes from 'malaysia-postcodes';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker'
-import { addNewPlace, getPlaceInfo } from '../actions/placeAction'
-
-import { useNavigation } from '@react-navigation/core'
-import moment from 'moment'
+import { addNewPlace, updatePlace } from '../actions/placeAction'
+import { auth, db, storage } from '../firebase'
+import { v4 as uuid4 } from 'uuid'
+import * as firebase from 'firebase';
+import 'react-native-get-random-values'
+import { useNavigation, useRoute } from '@react-navigation/native'
 
 import {
     Alert,
@@ -23,11 +25,13 @@ import {
     KeyboardAvoidingView,
     TextInput,
     ScrollView,
-    Switch
+    Switch,
+    Platform,
+    StatusBar
 } from 'react-native'
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 
 const Place = () => {
@@ -40,30 +44,78 @@ const Place = () => {
     const [show, setShow] = useState(false)
     const [show1, setShow1] = useState(false)
     const [entranceFee, setEntranceFee] = useState('')
-    const [isCharged, setCharged] = useState(false)
+    const [isCharged, setCharged] = useState(true)
     const [addressLine1, setAddressLine1] = useState('')
     const [addressLine2, setAddressLine2] = useState('')
     const [city, setCity] = useState('')
     const [postcode, setPostcode] = useState('')
     const [state, setState] = useState('')
     const [details, setDetails] = useState('')
-    const [event, setEvent] = useState('')
-    //const navigation = useNavigation()
-    const [imageUri, setImageUri] = useState('')
+    const [image, setImage] = useState('')
     const [fromTimeIsSet, setFromTimeIsSet] = useState(false)
     const [toTimeIsSet, setToTimeIsSet] = useState(false)
+    const [progress, setProgress] = useState(100)
 
-    const category = ['Farm', 'Park', 'Mountain', 'Other']
+    const category = ['Farm', 'Park', 'Forest', 'Mountain', 'Other']
     const dayOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
     const fromTimeText = fromTimeIsSet ? fromTime : '-From-';
     const toTimeText = toTimeIsSet ? toTime : '-To-';
 
+    const navigation = useNavigation()
+    const route = useRoute();
+    const userID = auth.currentUser?.uid;
+    var placeID = route.params.placeID;
+
+    useEffect(async () => {
+        if (placeID.trim())
+            await getPlace()
+
+    }, [placeID])
+
+    const getPlace = async () => {
+        await db.collection("Place").doc(placeID)
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+
+                    if ((doc.data().userID != userID))
+                        navigation.replace("PlaceDisplay",
+                            { placeID: placeID })
+
+                    setSpotName(doc.data().spotName)
+                    setSelectedCategory(doc.data().category)
+                    setFromDayOfWeek(doc.data().fromDayOfWeek)
+                    setToDayOfWeek(doc.data().toDayOfWeek)
+                    setFromTime(doc.data().fromTime)
+                    setToTime(doc.data().toTime)
+                    setEntranceFee(doc.data().entranceFee)
+                    setAddressLine1(doc.data().addressLine1)
+                    setAddressLine2(doc.data().addressLine2)
+                    setCity(doc.data().city)
+                    setPostcode(doc.data().postcode)
+                    setState(doc.data().state)
+                    setDetails(doc.data().details)
+                    setImage(doc.data().image)
+
+                    setFromTimeIsSet(true)
+                    setToTimeIsSet(true)
+
+                    console.log("Get place info rmation successfully place: ", placeID)
+
+                }
+                else {
+                    console.log("No such document!");
+                }
+            }), ((error) => {
+                console.log("Error getting documentL ", error(message))
+            })
+    }
+
     // To check whether all the required fields are filled in.
     // Add the place details into firestore if all the required fields are filled.
     const checkTextInput = async () => {
         if (!spotName.trim() || !selectedCategory.trim() || !fromDayOfWeek.trim() || !toDayOfWeek.length >= 1 || !fromTimeIsSet || !toTimeIsSet ||
-            !addressLine1.trim() || !city.trim() || !postcode.trim() || !state.trim() || !details.trim() || !imageUri.length >= 1) {
+            !addressLine1.trim() || !city.trim() || !postcode.trim() || !state.trim() || !details.trimStart() || !details.trimEnd() || !image.length >= 1) {
             alert('Please enter all the required fields!')
         } else {
             const data = {
@@ -73,20 +125,24 @@ const Place = () => {
                 toDayOfWeek: toDayOfWeek,
                 fromTime: fromTime,
                 toTime: toTime,
-                entranceFee: entranceFee,
+                entranceFee: entranceFee.trim(),
                 addressLine1: addressLine1,
                 addressLine2: addressLine2,
                 city: city,
                 postcode: postcode,
                 state: state,
-                details: details,
-                event: event,
-                image: imageUri,
+                details: details.trim(),
+                image: image
             }
-            console.log(data)
 
-            // add place details into firestore
-            addNewPlace(data)
+            if (!placeID.trim())
+                placeID = await addNewPlace(data)
+
+            else
+                updatePlace(data, placeID)
+
+            navigation.replace("PlaceDisplay",
+                { placeID: placeID })
         }
     }
 
@@ -143,9 +199,55 @@ const Place = () => {
             aspect: [4, 3],
         });
         if (!result.cancelled) {
-            setImageUri(imageUri => { return ([...imageUri, result]) });
+            uploadImage(result.uri)
+                .then(() => { console.log("Image Uploaded Successfully") })
+                .catch((error) => {
+                    Alert.alert(error.message)
+                })
         }
     };
+
+    const uploadImage = async (uri) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+
+        var uuid = uuid4();
+        const fileName = uuid;
+        var ref = storage.ref().child("Places/images/" + uuid).put(blob);
+
+        ref.on('state_changed',
+            (snapshot) => {
+                // Observe state change events such as progress, pause, and resume
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                setProgress(progress)
+                switch (snapshot.state) {
+                    case firebase.storage.TaskState.PAUSED: // or 'paused'
+                        console.log('Upload is paused');
+                        break;
+                    case firebase.storage.TaskState.RUNNING: // or 'running'
+                        console.log('Upload is running');
+                        break;
+                }
+            },
+            (error) => {
+                console.log("image upload unsuccessful: ", error.toString())
+            },
+            () => {
+                // Handle successful uploads on complete
+                // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+                ref.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    console.log('File available at', downloadURL);
+                    // setImageName(imageName => { return ([...imageName, uuid]) });
+                    // setImageUri(imageUri => { return ([...imageUri, uri]) });
+                    setImage(image => { return ([...image, { imageName: uuid, uri: downloadURL }]) });
+                    console.log(image)
+                });
+            }
+        );
+    }
+
 
     // to delete a selected image 
     const deletePhoto = (photo) => {
@@ -153,17 +255,39 @@ const Place = () => {
             {
                 text: "Yes",
                 onPress: () => (
-                    setImageUri(imageUri.filter((item) => item.uri != photo.uri).map((photo) => (photo)))
+                    toDelete(photo)
                 )
             },
             { text: "no" },
         ]);
     }
 
+    const toDelete = (photo) => {
+
+        var imageIndex;
+        image.map((image, index) => {
+            if (photo.uri == image.uri) {
+                imageIndex = index;
+            }
+        })
+        setImage(image.filter((item) => item != photo).map((image) => (image)))
+
+        const name = image[imageIndex].imageName;
+        var ref = storage.ref().child("Places/images/" + name);
+
+        ref.delete().then(() => {
+            console.log("delete " + name + " image successfully")
+        })
+            .catch((error) => {
+                console.log("delete image " + name + " fail with error: " + error)
+            })
+    }
+
     // Image card to show the selected image
     const Card = ({ image }) => {
         return <ImageBackground
             style={styles.cardImage}
+            keyExtractor={(image) => image.imageName.toString()}
             source={{ uri: image.uri }}>
             <TouchableOpacity
                 onPress={() => {
@@ -181,6 +305,7 @@ const Place = () => {
             behavior="padding: 15"
         >
             <SafeAreaView>
+            <StatusBar translucent backgroundColor="rgba(0,0,0,0)" />
                 <View style={styles.header}>
 
                     <Text style={styles.title}>
@@ -317,16 +442,16 @@ const Place = () => {
 
                     {/* Entrance Fee */}
                     <View style={styles.feeContainer}>
-                    <Text style={styles.subtitle}>Entrance Fee</Text>
-                    <Switch trackColor={{ false: "#767577", true: "#38761D" }}
-                        thumbColor={isCharged ? "rgb(196, 236, 213)" : "#f4f3f4"}
-                        ios_backgroundColor="#3e3e3e"
-                        onValueChange={toggleSwitch}
-                        value={isCharged}
-                        style={{paddingTop:15}}
-                    />
+                        <Text style={styles.subtitle}>Entrance Fee</Text>
+                        <Switch trackColor={{ false: "#767577", true: "#38761D" }}
+                            thumbColor={isCharged ? "rgb(196, 236, 213)" : "#f4f3f4"}
+                            ios_backgroundColor="#3e3e3e"
+                            onValueChange={toggleSwitch}
+                            value={isCharged}
+                            style={{ paddingTop: 15 }}
+                        />
                     </View>
-                    
+
                     {isCharged && <TextInput
                         multiline
                         placeholder="Fee(RM) + details"
@@ -346,7 +471,7 @@ const Place = () => {
                         style={styles.input}
                     />
                     <TextInput
-                        placeholder="Address Line 2"
+                        placeholder="Address Line 2 (optional)"
                         value={addressLine2}
                         onChangeText={text => setAddressLine2(text)}
                         style={styles.input}
@@ -360,7 +485,7 @@ const Place = () => {
                     <View style={styles.addressContainer}>
                         <TextInput
                             keyboardType='numeric'
-                            onfo
+                            maxLength={5}
                             placeholder="Postcode"
                             value={postcode}
                             onChangeText={text => setPostcode(text)}
@@ -400,13 +525,26 @@ const Place = () => {
 
                     {/* Event */}
                     <Text style={styles.subtitle}>Event</Text>
-                    <TextInput
-                        multiline
-                        placeholder="Event"
-                        value={event}
-                        onChangeText={text => setEvent(text)}
-                        style={styles.input}
-                    />
+                    <Text style={{ color: "#F19434", textAlign: 'justify', paddingHorizontal: 20 }}>   Does any event will be carried out recently? {"\n\t\t"}
+                        If you wish to add event, you can choose "event" tab to add it after pressing "submit" button.</Text>
+
+                    {/* Display selected images */}
+                    <View>
+                        <FlatList
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.uri.toString()}
+                            data={image}
+
+                            renderItem={({ item, index }) => (
+                                <Card image={item}
+                                    keyExtractor={(item) => item.uri}>
+                                </Card>
+                            )}
+                        />
+                    </View>
+
+                    {progress != 100 && <Text style={styles.uploading}>uploading...</Text>}
 
                     {/* Upload image */}
                     <TouchableOpacity
@@ -421,21 +559,6 @@ const Place = () => {
 
                     <Text style={styles.remark}>* Please upload at least 1 photo</Text>
 
-
-                    {/* Display selected images */}
-                    <View >
-                        <FlatList
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            data={imageUri}
-
-                            renderItem={({ item, index }) => (
-                                <Card image={item}
-                                    keyExtractor={(item) => item.uri}>
-                                </Card>
-                            )}
-                        />
-                    </View>
                 </ScrollView>
             </SafeAreaView>
         </KeyboardAvoidingView>
@@ -457,6 +580,7 @@ const styles = StyleSheet.create({
         height: '90%',
         padding: 25,
         paddingTop: 0,
+        paddingBottom: 10,
         marginBottom: 20,
         backgroundColor: '#fff',
         borderRadius: 20
@@ -486,7 +610,14 @@ const styles = StyleSheet.create({
         color: 'rgb(210, 24, 0)',
         fontSize: 10,
         textAlign: 'center',
-        marginBottom: 30
+        marginBottom: 50
+    },
+
+    uploading: {
+        color: '#38761D',
+        fontSize: 10,
+        textAlign: 'center',
+        marginTop: 50
     },
 
     input: {
@@ -498,7 +629,7 @@ const styles = StyleSheet.create({
     },
 
     pickerStyle: {
-        height: windowHeight * 0.05,
+        height: windowHeight * 0.02,
         width: windowWidth * 0.4,
         marginTop: 5,
         backgroundColor: 'rgba(0, 0, 0, 0.03)'
@@ -569,7 +700,9 @@ const styles = StyleSheet.create({
         height: 3 / 8 * windowWidth,
         width: windowWidth / 2,
         marginRight: 20,
-        borderRadius: 20,
-        marginBottom: 30,
+        borderRadius: 7,
+        marginBottom: 0,
+        marginTop: 50,
+        overflow: "hidden"
     }
 });

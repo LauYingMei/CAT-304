@@ -14,7 +14,11 @@ const Login = () => {
     useEffect(() => {
       const unsubscribe = auth.onAuthStateChanged(user => {
         if (user) {
-          navigation.replace("Place")
+          //navigation.replace("Main")
+          navigation.replace("Place",
+          {placeID: ""})
+          //navigation.navigate('PlaceDisplay',
+          //{placeID: "udoIlE5RwfGtWyAFB1eU"})
         }
       })
   
