@@ -8,14 +8,13 @@ import 'firebase/storage'
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAHMc6k8NZRMgvRshJNAZZvg3cyThLe7vg",
-  authDomain: "serene-art-315102.firebaseapp.com",
-  databaseURL: "https://serene-art-315102-default-rtdb.firebaseio.com",
-  projectId: "serene-art-315102",
-  storageBucket: "serene-art-315102.appspot.com",
-  messagingSenderId: "398430343168",
-  appId: "1:398430343168:web:46fab7e081592739a688e5",
-  measurementId: "G-H1P7XW23RF"
+  apiKey: "AIzaSyAUY4JvT4M_pjc5hnm3E8YcCfqbOmvXWzU",
+  authDomain: "fir-b3282.firebaseapp.com",
+  projectId: "fir-b3282",
+  storageBucket: "fir-b3282.appspot.com",
+  messagingSenderId: "606559030723",
+  appId: "1:606559030723:web:bde16b81e730eb6ccdc176",
+  measurementId: "G-Q40LTKHCN9"
 };
 
 

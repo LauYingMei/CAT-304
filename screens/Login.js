@@ -15,10 +15,10 @@ const Login = () => {
       const unsubscribe = auth.onAuthStateChanged(user => {
         if (user) {
           //navigation.replace("Main")
-          navigation.replace("Place",
-          {placeID: ""})
-          //navigation.navigate('PlaceDisplay',
-          //{placeID: "udoIlE5RwfGtWyAFB1eU"})
+          //navigation.replace("Place",
+          //{placeID: ""})
+          navigation.navigate('PlaceDisplay',
+          {placeID: "GBM7fvuiZg5DcQKqzyfb"})
         }
       })
   

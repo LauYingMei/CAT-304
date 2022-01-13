@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 import React, { useState, useEffect } from 'react'
 
 
+// add new place
 export async function addNewPlace(place) {
 
     var newPlace = db.collection("Place").doc();
@@ -40,6 +41,7 @@ export async function addNewPlace(place) {
     return newPlace.id
 }
 
+// update place information
 export async function updatePlace(place, placeID) {
 
     var currentPlace = db.collection("Place").doc(placeID);
@@ -70,6 +72,7 @@ export async function updatePlace(place, placeID) {
         })
 }
 
+// add new bookmark
 export async function addNewBookmark(ID, name) {
     var doc = await db.collection("users").doc(auth.currentUser?.uid)
     doc.collection("bookmarks").doc(ID).set({
@@ -87,6 +90,7 @@ export async function addNewBookmark(ID, name) {
         })
 }
 
+// remove bookmark
 export async function removeBookmark(ID) {
     var doc = await db.collection("users").doc(auth.currentUser?.uid)
     doc.collection("bookmarks").doc(ID).delete()
@@ -100,7 +104,7 @@ export async function removeBookmark(ID) {
         })
 }
 
-
+// add new review
 export async function addNewReview(placeID, review, starGiven, rating, totalReviewer) {
     var user;
 
@@ -125,7 +129,7 @@ export async function addNewReview(placeID, review, starGiven, rating, totalRevi
     // set review by creating a subcollection
     var doc = db.collection("Place").doc(placeID)
     await doc.collection("reviews").doc(auth.currentUser?.uid).set({
-        author: user.firstName.concat(" ", user.lastName),
+        author: user.userName,
         userID: auth.currentUser?.uid,
         review: review,
         rating: starGiven,
@@ -159,6 +163,7 @@ export async function addNewReview(placeID, review, starGiven, rating, totalRevi
         })
 }
 
+// delete review
 export async function toDeleteReview(placeID, starGiven, rating, totalReviewer) {
     await db.collection("Place").doc(placeID)
         .collection("reviews").doc(auth.currentUser?.uid)
@@ -196,6 +201,7 @@ export async function toDeleteReview(placeID, starGiven, rating, totalReviewer) 
         })
 }
 
+// add new event
 export async function addNewEvent(placeID, title, fromDate, toDate, fromTime, toTime, description) {
 
     // add event by creating a subcollection
@@ -220,6 +226,7 @@ export async function addNewEvent(placeID, title, fromDate, toDate, fromTime, to
         })
 }
 
+// delete event
 export async function toDeleteEvent(placeID, eventID) {
     await db.collection("Place").doc(placeID)
         .collection("events").doc(eventID)
@@ -231,6 +238,7 @@ export async function toDeleteEvent(placeID, eventID) {
         })
 }
 
+// update event
 export async function updateEvent(placeID, eventID, title, fromDate, toDate, fromTime, toTime, description) {
 
     // add event by creating a subcollection

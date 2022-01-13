@@ -73,6 +73,7 @@ const Place = () => {
 
     }, [placeID])
 
+    // to get place information from firebase
     const getPlace = async () => {
         await db.collection("Place").doc(placeID)
             .onSnapshot((doc) => {

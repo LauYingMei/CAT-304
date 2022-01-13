@@ -79,6 +79,7 @@ const PlaceDisplay = () => {
     const [eventEditable, setEventEditable] = useState(false)
     const [eventID, setEventID] = useState(false)
     const [userReview, setUserReview] = useState('')
+    const [expiredEvent, setExpiredEvent] = useState('')
 
 
     const fromTimeText = fromTimeIsSet ? fromTime : '-From-';
@@ -91,11 +92,13 @@ const PlaceDisplay = () => {
     const ref = useRef(0)
     const flatRef = useRef(0)
 
-    useEffect(async () => {
-        await getPlace()
+    useEffect(() => {
+        getPlace()
 
-    }, [placeID])
+    }, [])
 
+
+    // Scroll to top of scrollview (got animated when pressed on naviagation tap)
     const goTop = () => {
         ref.current.scrollTo({
             y: 0,
@@ -103,6 +106,7 @@ const PlaceDisplay = () => {
         })
     }
 
+    // Scroll to top of scrollview (no animated when pressed on naviagation tap)
     const goTop1 = () => {
         ref.current.scrollTo({
             y: 0,
@@ -110,6 +114,7 @@ const PlaceDisplay = () => {
         })
     }
 
+    // Scroll ot previous image
     const goPrevious = (index) => {
         flatRef.current.scrollToIndex({
             index: index - 1,
@@ -117,6 +122,7 @@ const PlaceDisplay = () => {
         })
     }
 
+    // Scroll ot next image
     const goLater = (index) => {
         flatRef.current.scrollToIndex({
             index: index + 1,
@@ -124,21 +130,22 @@ const PlaceDisplay = () => {
         })
     }
 
-
-
-
+    // get "Place" from firebase
     const getPlace = async () => {
         await db.collection("Place").doc(placeID)
             .onSnapshot((doc) => {
                 if (doc.exists) {
-                    if (doc.data().userID == userID)
+                    if (doc.data().userID == userID) {
                         setOwner(true)
-                    else
+                    }
+
+                    else {
                         setOwner(false)
+                        getBookmark()
+                    }
 
                     setPlace(doc.data())
                     console.log("Get place information successfully")
-                    console.log("userID: ", auth.currentUser?.uid)
                 }
                 else {
                     console.log("No such document!");
@@ -150,9 +157,23 @@ const PlaceDisplay = () => {
         getReview()
         getEvent()
         getUserReview()
-
     }
 
+    // to set bookmarked after checking user's bookmark list
+    const getBookmark = () => {
+        db.collection("users").doc(userID).collection("bookmarks").where("placeID", "==", placeID)
+            .get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    setBookmarked(true)
+                })
+            })
+            .catch((error) => {
+                console.log("Error check bookmark: ", error(message));
+            })
+    }
+
+    // to get user's own review to this place
     const getUserReview = async () => {
         db.collection("Place").doc(placeID).collection("reviews").doc(userID).get().then((doc) => {
             if (doc.exists) {
@@ -162,14 +183,12 @@ const PlaceDisplay = () => {
                 setEditable(false)
                 setIconName('trash')
             }
-
-
             else
                 console.log("not user's review")
         })
     }
 
-
+    // to get all reviews from firebase
     const getReview = async () => {
         await db.collection("Place").doc(placeID).collection("reviews")
             .orderBy("timestamp", "desc")
@@ -186,15 +205,25 @@ const PlaceDisplay = () => {
             })
     }
 
+    // to get event list from firebase
     const getEvent = async () => {
         await db.collection("Place").doc(placeID).collection("events")
             .orderBy("fromDate")
             .get()
             .then((querySnapshot) => {
                 setEventList('')
+                setExpiredEvent('')
+
                 querySnapshot.forEach((doc) => {
-                    setEventList(eventList => { return ([...eventList, doc.data()]) });
-                    console.log("Get events information successfully")
+
+                    if (doc.data().toDate.toDate().setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
+                        setEventList(eventList => { return ([...eventList, doc.data()]) });
+                        console.log("Get events information successfully")
+                    }
+                    else {
+                        setExpiredEvent(expiredEvent => { return ([...expiredEvent, doc.data()]) });
+                        console.log("Get expired events information successfully")
+                    }
                 });
             })
             , ((error) => {
@@ -202,7 +231,7 @@ const PlaceDisplay = () => {
             })
     }
 
-
+    // to add bookmark or remove bookmark
     const addBookmark = async () => {
         if (bookmarked) {
             await removeBookmark(placeID)
@@ -238,6 +267,7 @@ const PlaceDisplay = () => {
         </ImageBackground>
     }
 
+    // to display star(s) given by user (touchable)
     const Star = ({ num }) => {
         return <TouchableOpacity key={num} disabled={disable} onPress={() => { setStarNum(num) }}>
             {starGiven >= num ? <Icons name='md-star' size={25} color={'rgba(243, 116, 10, 0.8)'}></Icons> :
@@ -245,13 +275,14 @@ const PlaceDisplay = () => {
         </TouchableOpacity>
     }
 
+    // to display rating given at each review (not touchable)
     const Rating = ({ num, ratingGiven }) => {
         return ratingGiven >= num ? <Icons name='md-star' size={15} color={'rgba(243, 116, 10, 0.8)'}></Icons> :
             <Icons name='md-star-outline' size={15} color={'rgba(243, 116, 10, 0.8)'}></Icons>
     }
 
+    // to run each button event for review section based on condition
     const reviewButtonEvent = async () => {
-
         if (addreview) {
             if (editable) {
 
@@ -275,7 +306,7 @@ const PlaceDisplay = () => {
                     setToAddReview(false)
                     setEditable(false)
 
-                    await addNewReview(placeID, review, starGiven, place.rating, place.totalReviewer)
+                    await addNewReview(placeID, review.trim(), starGiven, place.rating, place.totalReviewer)
                     await getUserReview()
                     await getReview()
                 }
@@ -299,6 +330,7 @@ const PlaceDisplay = () => {
         }
     }
 
+    // to delete own review
     const deleteReview = () => {
         Alert.alert("Delete", "Are You Sure?", [
             {
@@ -330,6 +362,7 @@ const PlaceDisplay = () => {
         viewAreaCoveragePercentThreshold: 90
     }
 
+    // to run each button event for event section based on condition
     const eventButtonEvent = async () => {
 
         if (addEvent) {
@@ -360,6 +393,7 @@ const PlaceDisplay = () => {
         }
     }
 
+    // to empty all text inputs of event form
     const cleanEventTextInput = () => {
         setIconName('add')
         setToAddEvent(false)
@@ -376,6 +410,7 @@ const PlaceDisplay = () => {
         setEventID('')
     }
 
+    // to delete particular event
     const deleteEvent = (eventID) => {
         Alert.alert("Delete", "Are You Sure?", [
             {
@@ -391,6 +426,7 @@ const PlaceDisplay = () => {
         ]);
     }
 
+    // to delete all no saved event details (empty all fields)
     const deleteEventContent = () => {
         Alert.alert("No Save", "Are You Sure?", [
             {
@@ -405,16 +441,17 @@ const PlaceDisplay = () => {
         ]);
     }
 
+    // to edit particular event
     const editEvent = (item) => {
         setIconName('checkmark-sharp')
         setToAddEvent(true)
         setEventTitle(item.title)
         setFromDateIsSet(true)
         setToDateIsSet(true)
-        setFromDate_String(moment.unix(item.fromDate.seconds).format("DD-MMM-YYYY"))
-        setToDate_String(moment.unix(item.toDate.seconds).format("DD-MMM-YYYY"))
-        setFromDate(item.fromDate)
-        setToDate(item.toDate)
+        setFromDate_String(moment.unix(item.fromDate.seconds).format("DD-MM-YYYY"))
+        setToDate_String(moment.unix(item.toDate.seconds).format("DD-MM-YYYY"))
+        setFromDate(item.fromDate.toDate())
+        setToDate(item.toDate.toDate())
         setFromTimeIsSet(true)
         setToTimeIsSet(true)
         setFromTime(item.fromTime)
@@ -424,8 +461,9 @@ const PlaceDisplay = () => {
         setEventEditable(true)
     }
 
-    const fromDatePickerEvent = (event, selectedDay) => {
-        const currentDate = selectedDay || fromDate_String
+    // Event that hapen when the fromDate(start of event date) is updated
+    const fromDatePickerEvent = (event, selectedDate) => {
+        const currentDate = selectedDate || fromDate
         setShowFDate(false)
         //setShow(Platform.OS == 'ios')
         setFromDate(currentDate)
@@ -433,8 +471,9 @@ const PlaceDisplay = () => {
         setFromDateIsSet(true)
     }
 
-    const toDatePickerEvent = (event, selectedDay) => {
-        const currentDate = selectedDay || toDate_String
+    // Event that hapen when the toDate(end of event date) is updated
+    const toDatePickerEvent = (event, selectedDate) => {
+        const currentDate = selectedDate || toDate
         //setShow1(Platform.OS == 'ios')
         setShowTDate(false)
         setToDate(currentDate)
@@ -442,12 +481,12 @@ const PlaceDisplay = () => {
         setToDateIsSet(true)
     }
 
-    // to enable the Time Picker (clock) for fromTime(start of operation time)
+    // to enable the Date Picker (calendar) for fromDate(start of event date)
     const showDatePicker = () => {
         setShowFDate(true)
     }
 
-    // to enable the Time Picker (clock) for toTime(end of operation time)
+    // to enable the Date Picker (calendar) for toDate(end of event date)
     const showDatePicker1 = () => {
         setShowTDate(true)
     }
@@ -461,7 +500,7 @@ const PlaceDisplay = () => {
             return (`${time}`)
     }
 
-    // Event that hapen when the fromTime(start of operation time) is updated
+    // Event that hapen when the fromTime(start of event time) is updated
     const fromTimePickerEvent = (event, selectedTime) => {
         const currentTime = selectedTime || fromTime
         setShowFTime(false)
@@ -470,7 +509,7 @@ const PlaceDisplay = () => {
         setFromTimeIsSet(true)
     }
 
-    // Event that hapen when the toTime(end of operation time) is updated
+    // Event that hapen when the toTime(end of event time) is updated
     const toTimePickerEvent = (event, selectedTime) => {
         const currentTime = selectedTime || toTime
         //setShow1(Platform.OS == 'ios')
@@ -486,12 +525,12 @@ const PlaceDisplay = () => {
         return (hours + ':' + minutes)
     }
 
-    // to enable the Time Picker (clock) for fromTime(start of operation time)
+    // to enable the Time Picker (clock) for fromTime(start of event time)
     const showTimePicker = () => {
         setShowFTime(true)
     }
 
-    // to enable the Time Picker (clock) for toTime(end of operation time)
+    // to enable the Time Picker (clock) for toTime(end of event time)
     const showTimePicker1 = () => {
         setShowTTime(true)
     }
@@ -525,6 +564,7 @@ const PlaceDisplay = () => {
 
                 <View style={styles.detailsContainer}>
 
+                    {/* bookmark button */}
                     <View style={styles.iconContainer}>
                         {!owner && <TouchableOpacity onPress={addBookmark}>
                             {bookmarked ?
@@ -536,6 +576,7 @@ const PlaceDisplay = () => {
                         </TouchableOpacity>}
                     </View>
 
+                    {/* spot place name */}
                     <Text style={{
                         color: "black",
                         fontSize: 18,
@@ -546,6 +587,8 @@ const PlaceDisplay = () => {
                         marginRight: 31
                     }}>{place.spotName}</Text>
 
+
+                    {/* location (address) */}
                     <View style={styles.rowContainer}>
                         <Icons name="location" size={28} color='#38761D' />
                         <Text style={{
@@ -553,11 +596,14 @@ const PlaceDisplay = () => {
                         }}>{place.city}, {place.state}</Text>
                     </View>
 
+                    {/* current rating */}
                     <View style={styles.rowContainer}>
                         <Icons name="star" size={18} color='rgba(243, 116, 10, 0.8)' style={{ paddingLeft: 5 }} />
                         <Text style={{ paddingLeft: 10 }}>{place.rating == 0 ? "no rating" : place.rating}</Text>
                     </View>
 
+
+                    {/* Navigation tab */}
                     <View style={styles.navContainer}>
                         <TouchableOpacity onPress={() => { setNavTabChosen(1), goTop1() }}><Text style={navTabChosen == 1 ? styles.colorFocus : styles.colorDefault}>About</Text></TouchableOpacity>
                         <TouchableOpacity onPress={() => { setNavTabChosen(2), goTop1() }}><Text style={navTabChosen == 2 ? styles.colorFocus : styles.colorDefault}>Review</Text></TouchableOpacity>
@@ -565,10 +611,18 @@ const PlaceDisplay = () => {
                         <TouchableOpacity onPress={() => { setNavTabChosen(4), goTop1() }}><Text style={navTabChosen == 4 ? styles.colorFocus : styles.colorDefault}>Operation</Text></TouchableOpacity>
                     </View>
 
+
+
                     <View style={styles.contentContainer}>
                         <ScrollView ref={ref} showsVerticalScrollIndicator={false} style={{ flexGlow: 1, paddingHorizontal: 20 }} >
 
+                            {/* About */}
                             {navTabChosen == 1 && <Text style={styles.content}>{place.details}</Text>}
+
+
+                            {/* Review */}
+                            {/** Review input fields **/}
+                            {/***  rating field  ***/}
                             {navTabChosen == 2 && addreview && !owner &&
                                 <View>
                                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
@@ -589,15 +643,19 @@ const PlaceDisplay = () => {
                                             />
                                         </View>
                                     </View>
+
+                                    {/***  review field  ***/}
                                     <TextInput
                                         placeholder='write your review here...'
                                         editable={editable}
+                                        multiline
                                         value={review}
                                         onChangeText={text => setReview(text)}
                                         style={styles.input} />
                                 </View>
                             }
 
+                            {/**  display own review  **/}
                             {navTabChosen == 2 &&
                                 <View style={{ marginBottom: 10 }}>
                                     {!userReview == "" && <View>
@@ -626,9 +684,10 @@ const PlaceDisplay = () => {
                                         </View>
                                     </View>}
 
+                                    {/**  display all other review(s)  **/}
                                     {reviewList == '' ? <Text style={{ color: 'rgba(0,0,0,0.4)' }}>-No Review-</Text> :
                                         <View>
-                                            <Text style={styles.subtitle}>Other reviews</Text>
+                                            {reviewList.length == 1 && reviewList[0].userID == userID ? null : <Text style={styles.subtitle}>Other reviews</Text>}
                                             {reviewList.map((item, index) =>
                                             (
                                                 item.userID == userID ? null : <View style={styles.reviewContainer} key={index}>
@@ -652,10 +711,14 @@ const PlaceDisplay = () => {
                                                     </View>
                                                     <Text style={styles.time}>{moment.unix(item.timestamp.seconds).format("DD-MMM-YYYY HH:mm")}</Text>
                                                     <Text style={styles.content}>{item.review}</Text>
-                                                </View>))}</View>}
+                                                </View>))}
+                                        </View>}
                                 </View>
                             }
 
+
+                            {/* Event */}
+                            {/**  Event input fields  **/}
                             {navTabChosen == 3 && addEvent && owner &&
                                 <View>
                                     <View style={styles.formContainer}>
@@ -713,7 +776,6 @@ const PlaceDisplay = () => {
                                             )}
                                         </View>
 
-
                                         {/* Event Time */}
                                         <Text style={styles.subtitleForDateTime}>Event Time
                                             <Text style={{ color: 'rgb(210, 24, 0)' }}> *</Text>
@@ -758,6 +820,8 @@ const PlaceDisplay = () => {
                                                 />
                                             )}
                                         </View>
+
+                                        {/* Event Description */}
                                         <Text style={styles.subtitleForDateTime}>Event Description
                                             <Text style={{ color: 'rgb(210, 24, 0)' }}> *</Text>
                                         </Text>
@@ -774,38 +838,75 @@ const PlaceDisplay = () => {
 
                             }
 
+                            {/**  display all events  **/}
                             {navTabChosen == 3 &&
                                 <View style={{ marginBottom: 10 }}>
-                                    {eventList == '' ? <Text style={{ color: 'rgba(0,0,0,0.4)' }}>-No Event-</Text> : eventList.map((item, index) =>
-                                    (
-                                        <View style={styles.reviewContainer} key={index}>
 
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                <Text style={styles.subtitle}>{item.title}</Text>
+                                    {/**  display event(s) - not expired  **/}
+                                    <View>
+                                        {eventList == '' ? <Text style={{ color: 'rgba(0,0,0,0.4)' }}>-No Event-</Text> : eventList.map((item, index) =>
+                                        (
+                                            <View style={styles.reviewContainer} key={index}>
 
-                                                {owner ? <TouchableOpacity onPress={(() => editEvent(item))}>
-                                                    <Icon name='pencil' size={28} color='#38761D'></Icon>
-                                                </TouchableOpacity> : null}
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                    <Text style={styles.subtitle}>{item.title}</Text>
 
-                                                {owner ? <TouchableOpacity
-                                                    onPress={() => {
-                                                        deleteEvent(item.eventID);
-                                                    }}
-                                                >
-                                                    <Icons style={{ right: -15 }} name="close-circle-outline" size={28} color='rgb(210, 24, 0)' />
-                                                </TouchableOpacity> : null}
-                                            </View>
+                                                    {owner ? <TouchableOpacity onPress={(() => editEvent(item))}>
+                                                        <Icon name='pencil' size={28} color='#38761D'></Icon>
+                                                    </TouchableOpacity> : null}
+
+                                                    {owner ? <TouchableOpacity
+                                                        onPress={() => {
+                                                            deleteEvent(item.eventID);
+                                                        }}
+                                                    >
+                                                        <Icons style={{ right: -15 }} name="close-circle-outline" size={28} color='rgb(210, 24, 0)' />
+                                                    </TouchableOpacity> : null}
+                                                </View>
 
 
-                                            <Text style={styles.time}>Date: {moment.unix(item.fromDate.seconds).format("DD-MMM-YYYY")} - {moment.unix(item.toDate.seconds).format("DD-MMM-YYYY")}</Text>
-                                            <Text style={styles.time}>Time: {item.fromTime} : {item.toTime}</Text>
-                                            <Text style={{ fontWeight: 'bold' }}>{"\n"}Description: </Text>
-                                            <Text style={styles.content}>{item.description}</Text>
-                                        </View>))}
+                                                <Text style={styles.time}>Date: {moment.unix(item.fromDate.seconds).format("DD-MMM-YYYY (ddd)")} - {moment.unix(item.toDate.seconds).format("DD-MMM-YYYY (ddd)")}</Text>
+                                                <Text style={styles.time}>Time: {item.fromTime} : {item.toTime}</Text>
+                                                <Text style={{ fontWeight: 'bold' }}>{"\n"}Description: </Text>
+                                                <Text style={styles.content}>{item.description}</Text>
+                                            </View>))}
+                                    </View>
+
+                                    {/**  display expired event(s)  **/}
+                                    <View>
+                                        {!expiredEvent == '' && owner && <View>
+                                            <Text style={styles.subtitle}>Expired event(s)</Text>
+                                            {expiredEvent.map((item, index) =>
+                                            (
+                                                <View style={styles.userReviewContainer} key={index}>
+
+                                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                        <Text style={styles.subtitle}>{item.title}</Text>
+
+
+                                                        {owner ? <TouchableOpacity
+                                                            onPress={() => {
+                                                                deleteEvent(item.eventID);
+                                                            }}
+                                                        >
+                                                            <Icons style={{ right: -15 }} name="close-circle-outline" size={28} color='rgb(210, 24, 0)' />
+                                                        </TouchableOpacity> : null}
+                                                    </View>
+
+
+                                                    <Text style={styles.time}>Date: {moment.unix(item.fromDate.seconds).format("DD-MMM-YYYY (ddd)")} - {moment.unix(item.toDate.seconds).format("DD-MMM-YYYY (ddd)")}</Text>
+                                                    <Text style={styles.time}>Time: {item.fromTime} : {item.toTime}</Text>
+                                                    <Text style={{ fontWeight: 'bold' }}>{"\n"}Description: </Text>
+                                                    <Text style={styles.content}>{item.description}</Text>
+                                                </View>))}
+                                        </View>
+                                        }
+                                    </View>
                                 </View>}
 
 
 
+                            {/* Operation */}
                             {navTabChosen == 4 && <View style={{ marginBottom: 25 }}>
                                 <Text style={{ fontWeight: 'bold', color: 'rgba(11, 61, 42, 1)' }}>Category</Text>
                                 <Text style={styles.content}>{place.category}</Text>
@@ -829,24 +930,29 @@ const PlaceDisplay = () => {
                             }
                         </ScrollView>
                     </View>
+
+                    {/*  Go Top Button  */}
                     {(navTabChosen == 2 || navTabChosen == 3) &&
                         <View style={styles.goTopContainer}>
                             <TouchableOpacity onPress={goTop}><Icons name={"chevron-up-outline"} size={28} color={'white'}></Icons></TouchableOpacity>
                         </View>
                     }
 
+                    {/**  Review Button  **/}
                     {navTabChosen == 2 && !owner &&
                         <View style={styles.reviewIconContainer}>
                             <TouchableOpacity onPress={reviewButtonEvent} ><Icons name={iconName} size={28} color={'white'}></Icons></TouchableOpacity>
                         </View>
                     }
 
+                    {/**  Event Button  **/}
                     {navTabChosen == 3 && owner &&
                         <View style={styles.reviewIconContainer}>
                             <TouchableOpacity onPress={eventButtonEvent} ><Icons name={iconName} size={28} color={'white'}></Icons></TouchableOpacity>
                         </View>
                     }
 
+                    {/**  No Save Event Button  **/}
                     {navTabChosen == 3 && owner && addEvent &&
                         <View style={styles.cleanEventText}>
                             <TouchableOpacity onPress={deleteEventContent} ><Icons name={"close"} size={28} color={'white'}></Icons></TouchableOpacity>
