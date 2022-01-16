@@ -1,9 +1,6 @@
 import { auth, db } from '../firebase'
 import * as firebase from 'firebase'
 import { Alert } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import React, { useState, useEffect } from 'react'
-
 
 // add new place
 export async function addNewPlace(place) {
@@ -23,6 +20,8 @@ export async function addNewPlace(place) {
         city: place.city,
         postcode: place.postcode,
         state: place.state,
+        latitude: place.latitude,
+        longitude: place.longitude,
         details: place.details,
         image: place.image,
         rating: 0,
@@ -58,6 +57,8 @@ export async function updatePlace(place, placeID) {
         city: place.city,
         postcode: place.postcode,
         state: place.state,
+        latitude: place.latitude,
+        longitude: place.longitude,
         details: place.details,
         image: place.image,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -67,7 +68,24 @@ export async function updatePlace(place, placeID) {
             Alert.alert("Place is updated!");
 
         }).catch(error => {
-            alert("Something went wrong. Please try later! ");
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log(error.message)
+        })
+}
+
+export async function updateImage(image, placeID) {
+
+    var currentPlace = db.collection("Place").doc(placeID);
+    await currentPlace.update({
+        image: image,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    })
+        .then(function () {
+            console.log('Image is updated by: ', auth.currentUser?.uid)
+            Alert.alert("Image is updated!");
+
+        }).catch(error => {
+            Alert.alert("Something went wrong. Please try later! ");
             console.log(error.message)
         })
 }
@@ -85,7 +103,7 @@ export async function addNewBookmark(ID, name) {
             Alert.alert("Bookmark added!");
 
         }).catch(error => {
-            alert(error.message);
+            Alert.alert("Something went wrong. Please try later! ");
             console.log("Save bookmark unsuccesslly")
         })
 }
@@ -99,7 +117,7 @@ export async function removeBookmark(ID) {
             Alert.alert("Bookmark removed!");
 
         }).catch(error => {
-            alert(error.message);
+            Alert.alert("Something went wrong. Please try later! ");
             console.log("Remove bookmark unsuccesslly")
         })
 }
@@ -140,14 +158,14 @@ export async function addNewReview(placeID, review, starGiven, rating, totalRevi
             Alert.alert("Review Saved!");
 
         }).catch(error => {
-            alert(error.message);
-            console.log("Add review unsuccesslly")
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log(error.message)
             return
         })
 
     // update rating and totalReviewer
     var newRating = Math.round((totalReviewer * rating + starGiven) / (totalReviewer + 1) * 100) / 100
-    if(newRating>5){
+    if (newRating > 5) {
         newRating = 5
     }
     await db.collection("Place").doc(placeID)
@@ -171,6 +189,7 @@ export async function toDeleteReview(placeID, starGiven, rating, totalReviewer) 
             console.log("Review successfully deleted!")
             Alert.alert("Review Removed!");
         }).catch((error) => {
+            Alert.alert("Something went wrong. Please try later! ");
             console.log("Error removing review: ", error(message))
             return
         })
@@ -182,7 +201,7 @@ export async function toDeleteReview(placeID, starGiven, rating, totalReviewer) 
         newTotalReviewer = 0
     } else {
         newRating = Math.round((totalReviewer * rating - starGiven) / (totalReviewer - 1) * 100) / 100
-        if(newRating>5){
+        if (newRating > 5) {
             newRating = 5
         }
         newTotalReviewer = totalReviewer - 1
@@ -202,11 +221,13 @@ export async function toDeleteReview(placeID, starGiven, rating, totalReviewer) 
 }
 
 // add new event
-export async function addNewEvent(placeID, title, fromDate, toDate, fromTime, toTime, description) {
+export async function addNewEvent(placeID, spotName, title, fromDate, toDate, fromTime, toTime, description) {
 
     // add event by creating a subcollection
     var doc = db.collection("Place").doc(placeID).collection("events").doc();
     await doc.set({
+        placeID: placeID,
+        spotName: spotName,
         eventID: doc.id,
         title: title,
         fromDate: fromDate,
@@ -221,8 +242,30 @@ export async function addNewEvent(placeID, title, fromDate, toDate, fromTime, to
             Alert.alert("Event Saved!");
 
         }).catch(error => {
-            alert(error.message);
-            console.log("Add event unsuccesslly")
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log(error.message)
+        })
+
+
+    // store to another collection called "Event"
+    var doc2 = db.collection("Event").doc(doc.id);
+    await doc2.set({
+        placeID: placeID,
+        spotName: spotName,
+        eventID: doc.id,
+        title: title,
+        fromDate: fromDate,
+        toDate: toDate,
+        fromTime: fromTime,
+        toTime: toTime,
+        description: description,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    })
+        .then(function () {
+            console.log('Event is added by: ', auth.currentUser?.uid)
+
+        }).catch(error => {
+            console.log(error.message)
         })
 }
 
@@ -233,6 +276,14 @@ export async function toDeleteEvent(placeID, eventID) {
         .delete().then(() => {
             console.log("Event successfully deleted!")
             Alert.alert("Event Removed!");
+        }).catch((error) => {
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log("Error removing event: ", error(message))
+        })
+
+    await db.collection("Event").doc(eventID)
+        .delete().then(() => {
+            console.log("Event successfully deleted from external collection!")
         }).catch((error) => {
             console.log("Error removing event: ", error(message))
         })
@@ -258,7 +309,26 @@ export async function updateEvent(placeID, eventID, title, fromDate, toDate, fro
             Alert.alert("Event Updated!");
 
         }).catch(error => {
-            alert(error.message);
-            console.log("Update event unsuccesslly")
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log(error.message)
+        })
+
+
+    var doc2 = db.collection("Event").doc(eventID);
+    await doc2.update({
+        eventID: doc.id,
+        title: title,
+        fromDate: fromDate,
+        toDate: toDate,
+        fromTime: fromTime,
+        toTime: toTime,
+        description: description,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    })
+        .then(function () {
+            console.log('Event is updated by: ', auth.currentUser?.uid)
+
+        }).catch(error => {
+            console.log(error.message)
         })
 }

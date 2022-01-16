@@ -1,15 +1,12 @@
-import { useNavigation, useRoute, useScrollToTop } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import React, { useEffect, useRef, useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker'
 import moment from 'moment'
-import * as firebase from 'firebase'
 import { auth, db } from '../firebase'
-import { addNewBookmark, removeBookmark, addNewReview, toDeleteReview, addNewEvent, toDeleteEvent, updateEvent } from '../actions/placeAction'
-
 import Icons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { LogBox } from 'react-native';
+import { BackHandler, LogBox } from 'react-native';
 import _ from 'lodash';
 
 LogBox.ignoreLogs(['Warning:...']); // ignore specific logs
@@ -20,6 +17,16 @@ console.warn = message => {
         _console.warn(message);
     }
 };
+
+import {
+    addNewBookmark,
+    removeBookmark,
+    addNewReview,
+    toDeleteReview,
+    addNewEvent,
+    toDeleteEvent,
+    updateEvent
+} from '../actions/placeAction'
 
 import {
     Alert,
@@ -35,6 +42,7 @@ import {
     KeyboardAvoidingView,
     TextInput,
     ScrollView,
+    Platform
 } from 'react-native'
 
 const windowWidth = Dimensions.get('window').width;
@@ -56,6 +64,7 @@ const PlaceDisplay = () => {
     const [iconName, setIconName] = useState('add')
     const [disable, setDisability] = useState(false)
     const [owner, setOwner] = useState(false)
+    const [role, setRole] = useState("owner")
     const [place, setPlace] = useState('')
     const [reviewList, setReviewList] = useState('')
     const [eventList, setEventList] = useState('')
@@ -63,10 +72,12 @@ const PlaceDisplay = () => {
     const [eventTitle, setEventTitle] = useState('')
     const [fromDate_String, setFromDate_String] = useState(new Date())
     const [toDate_String, setToDate_String] = useState(new Date())
-    const [fromDate, setFromDate] = useState(new Date(0))
-    const [toDate, setToDate] = useState(new Date(0))
-    const [fromTime, setFromTime] = useState(new Date(0))
-    const [toTime, setToTime] = useState(new Date(0))
+    const [fromDate, setFromDate] = useState(new Date())
+    const [toDate, setToDate] = useState(new Date())
+    const [fromTime, setFromTime] = useState(new Date())
+    const [toTime, setToTime] = useState(new Date())
+    const [fromTimeToShow, setFromTimeToShow] = useState(new Date())
+    const [toTimeToShow, setToTimeToShow] = useState(new Date())
     const [description, setDescription] = useState('')
     const [showFTime, setShowFTime] = useState(false)
     const [showTTime, setShowTTime] = useState(false)
@@ -95,6 +106,18 @@ const PlaceDisplay = () => {
     useEffect(() => {
         getPlace()
 
+        // control physical back button
+        const backAction = () => {
+            navigation.replace("HomeScreen")
+            return true;
+          };
+      
+          const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+          );
+      
+          return () => backHandler.remove();
     }, [])
 
 
@@ -114,7 +137,7 @@ const PlaceDisplay = () => {
         })
     }
 
-    // Scroll ot previous image
+    // Scroll to previous image
     const goPrevious = (index) => {
         flatRef.current.scrollToIndex({
             index: index - 1,
@@ -122,7 +145,7 @@ const PlaceDisplay = () => {
         })
     }
 
-    // Scroll ot next image
+    // Scroll to next image
     const goLater = (index) => {
         flatRef.current.scrollToIndex({
             index: index + 1,
@@ -148,10 +171,11 @@ const PlaceDisplay = () => {
                     console.log("Get place information successfully")
                 }
                 else {
+                    Alert.alert("This page is not found.")
                     console.log("No such document!");
                 }
             }), ((error) => {
-                console.log("Error getting documentL ", error(message))
+                console.log("Error getting document: ", error(message))
             })
 
         getReview()
@@ -161,7 +185,16 @@ const PlaceDisplay = () => {
 
     // to set bookmarked after checking user's bookmark list
     const getBookmark = () => {
-        db.collection("users").doc(userID).collection("bookmarks").where("placeID", "==", placeID)
+        var document = db.collection("users").doc(userID)
+        document.get()
+            .then((doc) => {
+                if (doc.exists)
+                    setRole(doc.data().role)
+                else
+                    console.log("No such user!")
+            })
+
+        document.collection("bookmarks").where("placeID", "==", placeID)
             .get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
@@ -231,10 +264,6 @@ const PlaceDisplay = () => {
             })
     }
 
-    const getEventList = async () => {
-        return eventList;
-    }
-
     // to add bookmark or remove bookmark
     const addBookmark = async () => {
         if (bookmarked) {
@@ -247,7 +276,6 @@ const PlaceDisplay = () => {
             setBookmarked(true)
         }
     }
-
 
     // Image card to show the selected image
     const Card = ({ image, index }) => {
@@ -311,6 +339,8 @@ const PlaceDisplay = () => {
                     setEditable(false)
 
                     await addNewReview(placeID, review.trim(), starGiven, place.rating, place.totalReviewer)
+                    setReview('')
+                    getPlace()
                     await getUserReview()
                     await getReview()
                 }
@@ -335,19 +365,20 @@ const PlaceDisplay = () => {
     }
 
     // to delete own review
-    const deleteReview = () => {
+    const deleteReview = async () => {
         Alert.alert("Delete", "Are You Sure?", [
             {
                 text: "Yes",
-                onPress: () => (
-                    toDeleteReview(placeID, starGiven, place.rating, place.totalReviewer),
+                onPress: async () => (
+                    await toDeleteReview(placeID, starGiven, place.rating, place.totalReviewer),
                     setIconName('add'),
                     setEditable(true),
                     setDisability(false),
                     setReview(""),
                     getReview(),
                     getUserReview(),
-                    setUserReview('')
+                    setUserReview(''),
+                    getPlace()
                 )
             },
             {
@@ -361,14 +392,9 @@ const PlaceDisplay = () => {
         ]);
     }
 
-    const viewabilityConfig = () => {
-        waitForInteraction: true
-        viewAreaCoveragePercentThreshold: 90
-    }
-
     // to run each button event for event section based on condition
     const eventButtonEvent = async () => {
-
+        
         if (addEvent) {
 
             if (eventTitle.trim() && description.trimStart() && description.trimEnd()
@@ -379,7 +405,7 @@ const PlaceDisplay = () => {
                     setEventEditable(false)
                 }
                 else {
-                    await addNewEvent(placeID, eventTitle, fromDate, toDate, fromTime, toTime, description.trim())
+                    await addNewEvent(placeID, place.spotName, eventTitle, fromDate, toDate, fromTime, toTime, description.trim())
                 }
 
                 cleanEventTextInput()
@@ -387,7 +413,7 @@ const PlaceDisplay = () => {
 
             }
             else {
-                alert('Please enter all the required fields!')
+                Alert.alert('Reminder', 'Please enter all the required fields!')
             }
         }
         else {
@@ -468,9 +494,12 @@ const PlaceDisplay = () => {
     // Event that hapen when the fromDate(start of event date) is updated
     const fromDatePickerEvent = (event, selectedDate) => {
         const currentDate = selectedDate || fromDate
-        setShowFDate(false)
-        //setShow(Platform.OS == 'ios')
+        setShowFDate(Platform.OS == 'ios')
         setFromDate(currentDate)
+        if (toDate < currentDate) {
+            setToDate(currentDate)
+            setToDate_String(moment(currentDate).format("DD-MM-YYYY"))
+        }
         setFromDate_String(moment(currentDate).format("DD-MM-YYYY"))
         setFromDateIsSet(true)
     }
@@ -478,23 +507,11 @@ const PlaceDisplay = () => {
     // Event that hapen when the toDate(end of event date) is updated
     const toDatePickerEvent = (event, selectedDate) => {
         const currentDate = selectedDate || toDate
-        //setShow1(Platform.OS == 'ios')
-        setShowTDate(false)
+        setShowTDate(Platform.OS == 'ios')
         setToDate(currentDate)
         setToDate_String(moment(currentDate).format("DD-MM-YYYY"))
         setToDateIsSet(true)
     }
-
-    // to enable the Date Picker (calendar) for fromDate(start of event date)
-    const showDatePicker = () => {
-        setShowFDate(true)
-    }
-
-    // to enable the Date Picker (calendar) for toDate(end of event date)
-    const showDatePicker1 = () => {
-        setShowTDate(true)
-    }
-
 
     // make hours and minutes in two digits format
     function makeTwoDigit(time) {
@@ -507,8 +524,8 @@ const PlaceDisplay = () => {
     // Event that hapen when the fromTime(start of event time) is updated
     const fromTimePickerEvent = (event, selectedTime) => {
         const currentTime = selectedTime || fromTime
-        setShowFTime(false)
-        //setShow(Platform.OS == 'ios')
+        setShowFTime(Platform.OS == 'ios')
+        setFromTimeToShow(currentTime)
         setFromTime(getTimes(currentTime))
         setFromTimeIsSet(true)
     }
@@ -516,8 +533,8 @@ const PlaceDisplay = () => {
     // Event that hapen when the toTime(end of event time) is updated
     const toTimePickerEvent = (event, selectedTime) => {
         const currentTime = selectedTime || toTime
-        //setShow1(Platform.OS == 'ios')
-        setShowTTime(false)
+        setShowTTime(Platform.OS == 'ios')
+        setToTimeToShow(currentTime)
         setToTime(getTimes(currentTime))
         setToTimeIsSet(true)
     }
@@ -529,23 +546,14 @@ const PlaceDisplay = () => {
         return (hours + ':' + minutes)
     }
 
-    // to enable the Time Picker (clock) for fromTime(start of event time)
-    const showTimePicker = () => {
-        setShowFTime(true)
-    }
-
-    // to enable the Time Picker (clock) for toTime(end of event time)
-    const showTimePicker1 = () => {
-        setShowTTime(true)
-    }
-
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior="position"
         >
             <SafeAreaView>
-                <StatusBar translucent backgroundColor="rgba(0,0,0,0)" />
+                <StatusBar hidden translucent backgroundColor="rgba(0,0,0,0.5)" />
+
                 {/* Display selected images */}
                 <View>
                     <FlatList
@@ -554,7 +562,6 @@ const PlaceDisplay = () => {
                         scrollEventThrottle={16}
                         showsHorizontalScrollIndicator={false}
                         snapToInterval={windowWidth}
-                        viewabilityConfig={viewabilityConfig}
                         keyExtractor={(item) => item.uri.toString()}
                         data={place.image}
 
@@ -564,21 +571,24 @@ const PlaceDisplay = () => {
                             </Card>
                         )}
                     />
+                    <TouchableOpacity onPress={() => navigation.replace("HomeScreen")} style={styles.goBackStyle}><Icons name="md-arrow-back-outline" size={35} color='#E1E2DA' /></TouchableOpacity>
                 </View>
 
                 <View style={styles.detailsContainer}>
 
                     {/* bookmark button */}
-                    <View style={styles.iconContainer}>
-                        {!owner && <TouchableOpacity onPress={addBookmark}>
+                    {(owner || role == "user") && <View style={styles.iconContainer}>
+                        {!owner && role == "user" && <TouchableOpacity onPress={addBookmark}>
                             {bookmarked ?
-                                <Icons name="bookmark" size={30} color='rgb(183, 193, 172)' /> :
-                                <Icons name="bookmark-outline" size={30} color='#38761D' />}
+                                <Icon name="bookmark" size={30} color='rgb(183, 193, 172)' /> :
+                                <Icon name="bookmark-plus-outline" size={30} color='#38761D' />}
                         </TouchableOpacity>}
+
+                        {/* edit button */}
                         {owner && <TouchableOpacity onPress={() => navigation.navigate('Place', { placeID: placeID })}>
                             <Icon name='pencil' size={30} color='#38761D'></Icon>
                         </TouchableOpacity>}
-                    </View>
+                    </View>}
 
                     {/* spot place name */}
                     <Text style={{
@@ -588,7 +598,7 @@ const PlaceDisplay = () => {
                         fontFamily: "sans-serif-medium",
                         marginLeft: 5,
                         marginBottom: 5,
-                        marginRight: 31
+                        width: '85%'
                     }}>{place.spotName}</Text>
 
 
@@ -621,13 +631,13 @@ const PlaceDisplay = () => {
                         <ScrollView ref={ref} showsVerticalScrollIndicator={false} style={{ flexGlow: 1, paddingHorizontal: 20 }} >
 
                             {/* About */}
-                            {navTabChosen == 1 && <Text style={styles.content}>{place.details}</Text>}
+                            {navTabChosen == 1 && <View><Text style={styles.content}>{place.details}</Text><View style={styles.lineStyle}></View></View>}
 
 
                             {/* Review */}
                             {/** Review input fields **/}
                             {/***  rating field  ***/}
-                            {navTabChosen == 2 && addreview && !owner &&
+                            {navTabChosen == 2 && addreview && !owner && role == "user" &&
                                 <View>
                                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                                         <View style={styles.rowContainer}>
@@ -653,6 +663,8 @@ const PlaceDisplay = () => {
                                         placeholder='write your review here...'
                                         editable={editable}
                                         multiline
+                                        minHeight={windowHeight * 0.07}
+                                        maxHeight={windowHeight * 0.15}
                                         value={review}
                                         onChangeText={text => setReview(text)}
                                         style={styles.input} />
@@ -662,7 +674,7 @@ const PlaceDisplay = () => {
                             {/**  display own review  **/}
                             {navTabChosen == 2 &&
                                 <View style={{ marginBottom: 10 }}>
-                                    {!userReview == "" && <View>
+                                    {!userReview == "" && role == "user" && <View>
                                         <Text style={styles.subtitle}>Your review</Text>
                                         <View style={styles.userReviewContainer}>
                                             <View style={styles.reviewRowContainer}>
@@ -716,6 +728,7 @@ const PlaceDisplay = () => {
                                                     <Text style={styles.time}>{moment.unix(item.timestamp.seconds).format("DD-MMM-YYYY HH:mm")}</Text>
                                                     <Text style={styles.content}>{item.review}</Text>
                                                 </View>))}
+                                            <View style={styles.lineStyle}></View>
                                         </View>}
                                 </View>
                             }
@@ -743,39 +756,44 @@ const PlaceDisplay = () => {
                                         <View style={styles.dayTimeRowContainer}>
 
                                             <Text style={styles.content}>From:</Text>
-                                            <TouchableOpacity
-                                                style={styles.buttonTime}
-                                                onPress={showDatePicker}
-                                            >
-                                                <Text style={styles.buttonText}>{fromDateText}</Text>
-                                            </TouchableOpacity>
+                                            {((Platform.OS == "ios" && !showFDate) || (Platform.OS != "ios")) &&
+                                                <TouchableOpacity
+                                                    style={styles.buttonTime}
+                                                    onPress={() => setShowFDate(true)}
+                                                >
+                                                    <Text style={styles.buttonText}>{fromDateText}</Text>
+                                                </TouchableOpacity>}
 
                                             {showFDate && (
                                                 <DateTimePicker
                                                     testID='dateTimePicker'
-                                                    value={new Date()}
+                                                    value={fromDate}
                                                     mode={'date'}
-
+                                                    minimumDate={new Date()}
                                                     display='default'
                                                     onChange={fromDatePickerEvent}
+                                                    style={Platform.OS == "ios" ? styles.dateTimeStyle : null}
                                                 />
                                             )}
 
                                             <Text style={styles.content}>To:</Text>
-                                            <TouchableOpacity
-                                                style={styles.buttonTime}
-                                                onPress={showDatePicker1}
-                                            >
-                                                <Text style={styles.buttonText}>{toDateText}</Text>
-                                            </TouchableOpacity>
+                                            {((Platform.OS == "ios" && !showTDate) || (Platform.OS != "ios")) &&
+                                                <TouchableOpacity
+                                                    style={styles.buttonTime}
+                                                    onPress={() => setShowTDate(true)}
+                                                >
+                                                    <Text style={styles.buttonText}>{toDateText}</Text>
+                                                </TouchableOpacity>}
 
                                             {showTDate && (
                                                 <DateTimePicker
                                                     testID='dateTimePicker'
-                                                    value={new Date()}
+                                                    value={toDate}
                                                     mode={'date'}
                                                     display='default'
+                                                    minimumDate={fromDate}
                                                     onChange={toDatePickerEvent}
+                                                    style={Platform.OS == "ios" ? styles.dateTimeStyle : null}
                                                 />
                                             )}
                                         </View>
@@ -787,40 +805,44 @@ const PlaceDisplay = () => {
 
                                         <View style={styles.dayTimeRowContainer}>
                                             <Text style={styles.content}>From:</Text>
-                                            <TouchableOpacity
-                                                style={styles.buttonTime}
-                                                onPress={showTimePicker}
-                                            >
-                                                <Text style={styles.buttonText}>{fromTimeText}</Text>
-                                            </TouchableOpacity>
+                                            {((Platform.OS == "ios" && !showFTime) || (Platform.OS != "ios")) &&
+                                                <TouchableOpacity
+                                                    style={styles.buttonTime}
+                                                    onPress={() => setShowFTime(true)}
+                                                >
+                                                    <Text style={styles.buttonText}>{fromTimeText}</Text>
+                                                </TouchableOpacity>}
 
                                             {showFTime && (
                                                 <DateTimePicker
                                                     testID='dateTimePicker'
-                                                    value={new Date()}
+                                                    value={fromTimeToShow}
                                                     mode={'time'}
                                                     is24Hour={true}
                                                     display='default'
                                                     onChange={fromTimePickerEvent}
+                                                    style={Platform.OS == "ios" ? styles.dateTimeStyle : null}
                                                 />
                                             )}
 
                                             <Text style={styles.content}>To:</Text>
-                                            <TouchableOpacity
-                                                style={styles.buttonTime}
-                                                onPress={showTimePicker1}
-                                            >
-                                                <Text style={styles.buttonText}>{toTimeText}</Text>
-                                            </TouchableOpacity>
+                                            {((Platform.OS == "ios" && !showTTime) || (Platform.OS != "ios")) &&
+                                                <TouchableOpacity
+                                                    style={styles.buttonTime}
+                                                    onPress={() => setShowTTime(true)}
+                                                >
+                                                    <Text style={styles.buttonText}>{toTimeText}</Text>
+                                                </TouchableOpacity>}
 
                                             {showTTime && (
                                                 <DateTimePicker
                                                     testID='dateTimePicker'
-                                                    value={new Date()}
+                                                    value={toTimeToShow}
                                                     mode={'time'}
                                                     is24Hour={true}
                                                     display='default'
                                                     onChange={toTimePickerEvent}
+                                                    style={Platform.OS == "ios" ? styles.dateTimeStyle : null}
                                                 />
                                             )}
                                         </View>
@@ -832,6 +854,7 @@ const PlaceDisplay = () => {
                                         <TextInput
                                             placeholder='Event Description'
                                             multiline
+                                            maxHeight={windowHeight * 0.3}
                                             enablesReturnKeyAutomatically={true}
                                             value={description}
                                             onChangeText={text => setDescription(text)}
@@ -906,6 +929,7 @@ const PlaceDisplay = () => {
                                         </View>
                                         }
                                     </View>
+                                    <View style={styles.lineStyle}></View>
                                 </View>}
 
 
@@ -930,6 +954,7 @@ const PlaceDisplay = () => {
                                     {place.addressLine2.trim() ? <Text>{place.addressLine2},</Text> : null}
                                     <Text>{place.postcode} {place.city}, {place.state}.</Text>
                                 </View>
+                                <View style={styles.lineStyle}></View>
                             </View>
                             }
                         </ScrollView>
@@ -943,7 +968,7 @@ const PlaceDisplay = () => {
                     }
 
                     {/**  Review Button  **/}
-                    {navTabChosen == 2 && !owner &&
+                    {navTabChosen == 2 && !owner && role == "user" &&
                         <View style={styles.reviewIconContainer}>
                             <TouchableOpacity onPress={reviewButtonEvent} ><Icons name={iconName} size={28} color={'white'}></Icons></TouchableOpacity>
                         </View>
@@ -1000,7 +1025,8 @@ const styles = StyleSheet.create({
         top: -30,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        paddingVertical: 20,
+        height: windowHeight * 0.6,
+        paddingTop: 15,
         paddingHorizontal: 20,
         backgroundColor: "white",
         flexGrow: 1
@@ -1036,11 +1062,13 @@ const styles = StyleSheet.create({
 
     contentContainer: {
         width: windowWidth * 0.9,
-        height: windowHeight * 0.38,
-        bottom: 10,
+        height: windowHeight * 0.5,
+        bottom: windowHeight * 0.04,
         flexGrow: 1,
-        marginVertical: 15,
-        paddingVertical: 0
+        marginTop: 15,
+        marginBottom: 10,
+        paddingBottom: 10,
+        paddingTop: 20
     },
 
     content: {
@@ -1063,7 +1091,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#38761D',
         borderRadius: 30,
         elevation: 15,
-        bottom: 50,
+        bottom: windowHeight * 0.003,
         right: 20,
         alignItems: 'center',
         justifyContent: 'center',
@@ -1075,7 +1103,8 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderRadius: 10,
         marginTop: 5,
-        marginHorizontal: 5
+        marginHorizontal: 5,
+        minHeight: windowHeight * 0.07
     },
 
     reviewContainer: {
@@ -1128,7 +1157,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: 'rgba(11, 61, 42, 1)',
         marginTop: 15,
-        width: '59%',
+        width: '55%',
         marginLeft: 4
     },
 
@@ -1163,7 +1192,7 @@ const styles = StyleSheet.create({
 
     buttonTime: {
         backgroundColor: 'rgb(183, 193, 172)',
-        width: '30%',
+        width: '35%',
         padding: 10,
         borderRadius: 10,
         alignItems: 'center',
@@ -1191,7 +1220,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#C12929',
         borderRadius: 30,
         elevation: 15,
-        bottom: 50,
+        bottom: windowHeight * 0.003,
         right: 80,
         alignItems: 'center',
         justifyContent: 'center',
@@ -1199,10 +1228,8 @@ const styles = StyleSheet.create({
 
     lineStyle: {
         borderBottomWidth: 0,
-
         marginTop: 70,
         marginBottom: 2
-
     },
 
     formContainer: {
@@ -1219,10 +1246,31 @@ const styles = StyleSheet.create({
         backgroundColor: '#38761D',
         borderRadius: 30,
         elevation: 15,
-        bottom: 50,
+        bottom: windowHeight * 0.003,
         left: 15,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+
+    goBackStyle: {
+        height: 50,
+        width: 50,
+        position: 'absolute',
+        borderRadius: 30,
+        top: windowHeight * 0.03,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10
+    },
+
+    dateTimeStyle: {
+        position: 'relative',
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        width: '30%',
+        padding: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginTop: 10
     }
 })
 

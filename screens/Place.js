@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icons from 'react-native-vector-icons/AntDesign';
+import Iconss from 'react-native-vector-icons/Ionicons';
 import * as MalaysiaPostcodes from 'malaysia-postcodes';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker'
@@ -11,6 +12,7 @@ import { v4 as uuid4 } from 'uuid'
 import * as firebase from 'firebase';
 import 'react-native-get-random-values'
 import { useNavigation, useRoute } from '@react-navigation/native'
+import * as Location from 'expo-location';
 
 import {
     Alert,
@@ -27,7 +29,8 @@ import {
     ScrollView,
     Switch,
     Platform,
-    StatusBar
+    StatusBar,
+    ActionSheetIOS,
 } from 'react-native'
 
 const windowWidth = Dimensions.get('window').width;
@@ -39,10 +42,12 @@ const Place = () => {
     const [selectedCategory, setSelectedCategory] = useState('')
     const [fromDayOfWeek, setFromDayOfWeek] = useState('')
     const [toDayOfWeek, setToDayOfWeek] = useState('')
-    const [fromTime, setFromTime] = useState(new Date(0))
-    const [toTime, setToTime] = useState(new Date(0))
-    const [show, setShow] = useState(false)
-    const [show1, setShow1] = useState(false)
+    const [fromTime, setFromTime] = useState(new Date())
+    const [fromTimeToShow, setFromTimeToShow] = useState(new Date())
+    const [toTime, setToTime] = useState(new Date())
+    const [toTimeToShow, setToTimeToShow] = useState(new Date())
+    const [showFTime, setShowFTime] = useState(false)
+    const [showTTime, setShowTTime] = useState(false)
     const [entranceFee, setEntranceFee] = useState('')
     const [isCharged, setCharged] = useState(true)
     const [addressLine1, setAddressLine1] = useState('')
@@ -55,6 +60,10 @@ const Place = () => {
     const [fromTimeIsSet, setFromTimeIsSet] = useState(false)
     const [toTimeIsSet, setToTimeIsSet] = useState(false)
     const [progress, setProgress] = useState(100)
+    const [locationPermised, setLocationPermission] = useState(false)
+    const [latitude, setLatitude] = useState('')
+    const [longitude, setLongitude] = useState('')
+    const [editable, setEditable] = useState(false)
 
     const category = ['Farm', 'Park', 'Forest', 'Mountain', 'Other']
     const dayOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -67,21 +76,60 @@ const Place = () => {
     const userID = auth.currentUser?.uid;
     var placeID = route.params.placeID;
 
-    useEffect(async () => {
+    useEffect(() => {
         if (placeID.trim())
-            await getPlace()
-
+            getPlace()
     }, [placeID])
+
+
+    // to get location permission in Android
+    const getLocationPermission = async () => {
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status == "granted") {
+                setLocationPermission(true)
+
+                // get user's coordinate (latitude and longitude)
+                const coordinate = await Location.getCurrentPositionAsync({})
+                setLatitude(JSON.stringify(coordinate.coords.latitude))
+                setLongitude(JSON.stringify(coordinate.coords.longitude))
+            }
+            else {
+                Alert.alert("Location Permission denied", "Please allow this app to get location to continue place creation! ")
+                return
+            }
+
+        } catch (err) {
+            console.warn(err);
+        }
+    }
+
+    const editLatLong = () => {
+        Alert.alert("Modify Coordinate", "This may affect the accuracy of your spot's coordinate. Are You Sure?", [
+            {
+                text: "Yes",
+                onPress: async () => (
+                    setEditable(true)
+                )
+            },
+            {
+                text: "no",
+            },
+        ]);
+        
+    }
+
 
     // to get place information from firebase
     const getPlace = async () => {
         await db.collection("Place").doc(placeID)
-            .onSnapshot((doc) => {
+            .get()
+            .then((doc) => {
                 if (doc.exists) {
-
-                    if ((doc.data().userID != userID))
-                        navigation.replace("PlaceDisplay",
-                            { placeID: placeID })
+                    if ((doc.data().userID != userID)) {
+                        Alert.alert("You have not the permission to edit it!")
+                        navigation.replace("Main")
+                    }
 
                     setSpotName(doc.data().spotName)
                     setSelectedCategory(doc.data().category)
@@ -95,14 +143,15 @@ const Place = () => {
                     setCity(doc.data().city)
                     setPostcode(doc.data().postcode)
                     setState(doc.data().state)
+                    setLatitude(doc.data().latitude)
+                    setLongitude(doc.data().longitude)
                     setDetails(doc.data().details)
                     setImage(doc.data().image)
-
                     setFromTimeIsSet(true)
                     setToTimeIsSet(true)
-
+                    setLocationPermission(true)
+                    
                     console.log("Get place information successfully place: ", placeID)
-
                 }
                 else {
                     console.log("No such document!");
@@ -114,10 +163,18 @@ const Place = () => {
 
     // To check whether all the required fields are filled in.
     // Add the place details into firestore if all the required fields are filled.
-    const checkTextInput = async () => {
+    // Update the place information if the place is existing.
+    const submitAction = async () => {
         if (!spotName.trim() || !selectedCategory.trim() || !fromDayOfWeek.trim() || !toDayOfWeek.length >= 1 || !fromTimeIsSet || !toTimeIsSet ||
             !addressLine1.trim() || !city.trim() || !postcode.trim() || !state.trim() || !details.trimStart() || !details.trimEnd() || !image.length >= 1) {
-            alert('Please enter all the required fields!')
+            Alert.alert('Reminder', 'Please enter all the required fields!')
+
+        }
+        else if (!locationPermised) {
+            Alert.alert("Mandatory", "Please share your location to get the accurate coordinate of your spot.")
+        }
+        else if (!latitude.trim() || !longitude.trim()) {
+            Alert.alert('You cannot empty the latitude and longitude fields!')
         } else {
             const data = {
                 spotName: spotName,
@@ -132,19 +189,98 @@ const Place = () => {
                 city: city,
                 postcode: postcode,
                 state: state,
+                latitude: latitude,
+                longitude: longitude,
                 details: details.trim(),
                 image: image
             }
 
-            if (!placeID.trim())
+            if (!placeID.trim()){
                 placeID = await addNewPlace(data)
-
+            }
+                
             else
-                updatePlace(data, placeID)
+                await updatePlace(data, placeID)
 
             navigation.replace("PlaceDisplay",
                 { placeID: placeID })
         }
+    }
+
+
+    // to enable category selection (ios only)
+    const toSelectCategory = () =>
+        ActionSheetIOS.showActionSheetWithOptions(
+            {
+                options: category,
+                title: "Category",
+
+                userInterfaceStyle: 'dark'
+            },
+            buttonIndex => {
+
+                category.map((item, index) => {
+                    if (buttonIndex == index)
+                        setSelectedCategory(item);
+                }
+                )
+            }
+        );
+
+    // to enable day of week selection (ios only)
+    const toSelectDayOfWeek = (type) =>
+        ActionSheetIOS.showActionSheetWithOptions(
+            {
+                options: dayOfWeek,
+                title: "From",
+
+                userInterfaceStyle: 'dark'
+            },
+            buttonIndex => {
+                dayOfWeek.map((item, index) => {
+                    if (buttonIndex == index && type == "from")
+                        setFromDayOfWeek(item);
+
+                    else if (buttonIndex == index && type == "to")
+                        setToDayOfWeek(item);
+                }
+                )
+            }
+
+        );
+
+    // to enable state selection (ios only)
+    const toSelectState = () =>
+        ActionSheetIOS.showActionSheetWithOptions(
+            {
+                options: MalaysiaPostcodes.getStates(),
+                title: "State",
+
+                userInterfaceStyle: 'dark'
+            },
+            buttonIndex => {
+
+                MalaysiaPostcodes.getStates().map((item, index) => {
+                    if (buttonIndex == index)
+                        setState(item);
+                }
+                )
+            }
+        );
+
+    // to go back to previous page
+    const goBack = () => {
+        Alert.alert("No Save", "Are You Sure?", [
+            {
+                text: "Yes",
+                onPress: () => (
+                    navigation.goBack()
+                )
+            },
+            {
+                text: "no",
+            },
+        ]);
     }
 
     // make hours and minutes in two digits format
@@ -158,17 +294,18 @@ const Place = () => {
     // Event that hapen when the fromTime(start of operation time) is updated
     const fromTimePickerEvent = (event, selectedTime) => {
         const currentTime = selectedTime || fromTime
-        setShow(false)
-        setShow(Platform.OS == 'ios')
+        setShowFTime(Platform.OS == 'ios')
+        setFromTimeToShow(currentTime)
         setFromTime(getTimes(currentTime))
         setFromTimeIsSet(true)
+
     }
 
     // Event that hapen when the toTime(end of operation time) is updated
     const toTimePickerEvent = (event, selectedTime) => {
         const currentTime = selectedTime || toTime
-        setShow1(Platform.OS == 'ios')
-        setShow1(false)
+        setShowTTime(Platform.OS == 'ios')
+        setToTimeToShow(currentTime)
         setToTime(getTimes(currentTime))
         setToTimeIsSet(true)
     }
@@ -178,16 +315,6 @@ const Place = () => {
         const hours = makeTwoDigit(time.getHours())
         const minutes = makeTwoDigit(time.getMinutes())
         return (hours + ':' + minutes)
-    }
-
-    // to enable the Time Picker (clock) for fromTime(start of operation time)
-    const showTimePicker = () => {
-        setShow(true)
-    }
-
-    // to enable the Time Picker (clock) for toTime(end of operation time)
-    const showTimePicker1 = () => {
-        setShow1(true)
     }
 
     // toggleSwitch for entrance fee
@@ -203,11 +330,12 @@ const Place = () => {
             uploadImage(result.uri)
                 .then(() => { console.log("Image Uploaded Successfully") })
                 .catch((error) => {
-                    Alert.alert(error.message)
+                    Alert.alert("Failed to upload image! Please try again.")
                 })
         }
     };
 
+    // to upload image
     const uploadImage = async (uri) => {
         const response = await fetch(uri);
         const blob = await response.blob();
@@ -236,12 +364,9 @@ const Place = () => {
                 console.log("image upload unsuccessful: ", error.toString())
             },
             () => {
-                // Handle successful uploads on complete
-                // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+                // Handle successful uploads on complete.
                 ref.snapshot.ref.getDownloadURL().then((downloadURL) => {
                     console.log('File available at', downloadURL);
-                    // setImageName(imageName => { return ([...imageName, uuid]) });
-                    // setImageUri(imageUri => { return ([...imageUri, uri]) });
                     setImage(image => { return ([...image, { imageName: uuid, uri: downloadURL }]) });
                     console.log(image)
                 });
@@ -250,7 +375,7 @@ const Place = () => {
     }
 
 
-    // to delete a selected image 
+    // to delete a selected image (asking)
     const deletePhoto = (photo) => {
         Alert.alert("Delete", "Are You Sure?", [
             {
@@ -263,6 +388,7 @@ const Place = () => {
         ]);
     }
 
+    // to delete a selected image (action)
     const toDelete = (photo) => {
 
         var imageIndex;
@@ -274,14 +400,17 @@ const Place = () => {
         setImage(image.filter((item) => item != photo).map((image) => (image)))
 
         const name = image[imageIndex].imageName;
-        var ref = storage.ref().child("Places/images/" + name);
 
-        ref.delete().then(() => {
-            console.log("delete " + name + " image successfully")
-        })
-            .catch((error) => {
-                console.log("delete image " + name + " fail with error: " + error)
+        if (!placeID.trim()) {
+            var ref = storage.ref().child("Places/images/" + name);
+
+            ref.delete().then(() => {
+                console.log("delete " + name + " image successfully")
             })
+                .catch((error) => {
+                    console.log("delete image " + name + " fail with error: " + error)
+                })
+        }
     }
 
     // Image card to show the selected image
@@ -300,22 +429,23 @@ const Place = () => {
         </ImageBackground>
     }
 
+
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior="padding: 15"
         >
             <SafeAreaView>
-            <StatusBar translucent backgroundColor="rgba(0,0,0,0)" />
+                <StatusBar translucent backgroundColor="rgba(0,0,0,0.1)" />
                 <View style={styles.header}>
-
+                    <TouchableOpacity onPress={goBack}><Icon name="chevron-left" size={20} color='#38761D' /></TouchableOpacity>
                     <Text style={styles.title}>
                         My Agrotourism Spot
                     </Text>
 
                     <TouchableOpacity
                         style={styles.buttonSubmit}
-                        onPress={checkTextInput}
+                        onPress={submitAction}
                     >
                         <Text style={styles.buttonText}>Submit</Text>
                     </TouchableOpacity>
@@ -341,7 +471,11 @@ const Place = () => {
                         <Text style={{ color: 'rgb(210, 24, 0)' }}> *</Text>
                     </Text>
 
-                    <Picker
+                    {Platform.OS == 'ios' && <View>
+                        <TouchableOpacity onPress={toSelectCategory}><View style={styles.inputSelection}><Text style={selectedCategory ? styles.inputText : styles.inputTextBlur}>{selectedCategory ? selectedCategory : "-category-"}</Text></View></TouchableOpacity>
+                    </View>}
+
+                    {Platform.OS != 'ios' && <Picker
                         prompt={"Category"}
                         selectedValue={selectedCategory}
                         style={styles.pickerStyle}
@@ -354,19 +488,20 @@ const Place = () => {
                             )
                         })
                         }
-                    </Picker>
-
+                    </Picker>}
 
                     {/* Operation Day */}
                     <Text style={styles.subtitle}>Operation Day
                         <Text style={{ color: 'rgb(210, 24, 0)' }}> *</Text>
                     </Text>
                     <View style={styles.addressContainer}>
-
-                        <Picker
+                        {Platform.OS == 'ios' &&
+                            <TouchableOpacity onPress={() => { toSelectDayOfWeek("from") }}><View style={styles.dateContainer}><Text style={fromDayOfWeek ? styles.inputText : styles.inputTextBlur}>{fromDayOfWeek ? fromDayOfWeek : "-From-"}</Text></View></TouchableOpacity>
+                        }
+                        {Platform.OS != 'ios' && <Picker
                             prompt={"From"}
                             selectedValue={fromDayOfWeek}
-                            style={styles.DayPickerStyle}
+                            style={styles.dayPickerStyle}
                             onValueChange={(itemValue) => setFromDayOfWeek(itemValue)}>
 
                             <Picker.Item label="-From-" enabled={false} style={{ color: 'rgba(0,0,0, 0.4)' }} />
@@ -376,12 +511,15 @@ const Place = () => {
                                 )
                             })
                             }
-                        </Picker>
+                        </Picker>}
 
-                        <Picker
+                        {Platform.OS == 'ios' &&
+                            <TouchableOpacity onPress={() => { toSelectDayOfWeek("to") }}><View style={styles.dateContainer}><Text style={toDayOfWeek ? styles.inputText : styles.inputTextBlur}>{toDayOfWeek ? toDayOfWeek : "-To-"}</Text></View></TouchableOpacity>
+                        }
+                        {Platform.OS != 'ios' && <Picker
                             prompt={"To"}
                             selectedValue={toDayOfWeek}
-                            style={styles.DayPickerStyle}
+                            style={styles.dayPickerStyle}
                             onValueChange={(itemValue) => setToDayOfWeek(itemValue)}>
 
                             <Picker.Item label="-To-" enabled={false} style={{ color: 'rgba(0,0,0, 0.4)' }} />
@@ -391,7 +529,7 @@ const Place = () => {
                                 )
                             })
                             }
-                        </Picker>
+                        </Picker>}
                     </View>
 
 
@@ -402,40 +540,44 @@ const Place = () => {
 
                     <View style={styles.addressContainer}>
                         <Text style={styles.subtitle}>From:</Text>
-                        <TouchableOpacity
-                            style={styles.buttonTime}
-                            onPress={showTimePicker}
-                        >
-                            <Text style={styles.buttonText}>{fromTimeText}</Text>
-                        </TouchableOpacity>
+                        {((Platform.OS == "ios" && !showFTime) || (Platform.OS != "ios")) &&
+                            <TouchableOpacity
+                                style={styles.buttonTime}
+                                onPress={() => setShowFTime(true)}
+                            >
+                                <Text style={fromTime ? styles.inputText : styles.inputTextBlur}>{fromTimeText}</Text>
+                            </TouchableOpacity>}
 
-                        {show && (
+                        {showFTime && (
                             <DateTimePicker
                                 testID='dateTimePicker'
-                                value={new Date()}
+                                value={fromTimeToShow}
                                 mode={'time'}
                                 is24Hour={true}
                                 display='default'
                                 onChange={fromTimePickerEvent}
+                                style={Platform.OS == "ios" ? styles.dateTimeStyle : null}
                             />
                         )}
 
                         <Text style={styles.subtitle}>To:</Text>
-                        <TouchableOpacity
-                            style={styles.buttonTime}
-                            onPress={showTimePicker1}
-                        >
-                            <Text style={styles.buttonText}>{toTimeText}</Text>
-                        </TouchableOpacity>
+                        {((Platform.OS == "ios" && !showTTime) || (Platform.OS != "ios")) &&
+                            <TouchableOpacity
+                                style={styles.buttonTime}
+                                onPress={() => setShowTTime(true)}
+                            >
+                                <Text style={toTime ? styles.inputText : styles.inputTextBlur}>{toTimeText}</Text>
+                            </TouchableOpacity>}
 
-                        {show1 && (
+                        {showTTime && (
                             <DateTimePicker
                                 testID='dateTimePicker'
-                                value={new Date()}
+                                value={toTimeToShow}
                                 mode={'time'}
                                 is24Hour={true}
                                 display='default'
                                 onChange={toTimePickerEvent}
+                                style={Platform.OS == "ios" ? styles.dateTimeStyle : null}
                             />
                         )}
                     </View>
@@ -449,7 +591,7 @@ const Place = () => {
                             ios_backgroundColor="#3e3e3e"
                             onValueChange={toggleSwitch}
                             value={isCharged}
-                            style={{ paddingTop: 15 }}
+                            style={{ marginTop: 10, transform: [{ scaleX: windowWidth * 0.002 }, { scaleY: windowWidth * 0.002 }] }}
                         />
                     </View>
 
@@ -458,13 +600,14 @@ const Place = () => {
                         placeholder="Fee(RM) + details"
                         value={entranceFee}
                         onChangeText={text => setEntranceFee(text)}
-                        style={styles.input}
+                        style={styles.feeInput}
                     />}
 
                     {/* Address */}
                     <Text style={styles.subtitle}>Address
                         <Text style={{ color: 'rgb(210, 24, 0)' }}> *</Text>
                     </Text>
+
                     <TextInput
                         placeholder="Address Line 1"
                         value={addressLine1}
@@ -490,10 +633,14 @@ const Place = () => {
                             placeholder="Postcode"
                             value={postcode}
                             onChangeText={text => setPostcode(text)}
-                            style={styles.input}
+                            style={styles.postcodeInput}
                         />
 
-                        <Picker
+                        {Platform.OS == 'ios' && <View>
+                            <TouchableOpacity onPress={toSelectState}><View style={styles.dateContainer}><Text style={state ? styles.inputText : styles.inputTextBlur}>{state ? state : "-state-"}</Text></View></TouchableOpacity>
+                        </View>}
+
+                        {Platform.OS != 'ios' && <Picker
                             prompt={"State"}
                             selectedValue={state}
                             style={styles.pickerStyle}
@@ -506,9 +653,50 @@ const Place = () => {
                                 )
                             })
                             }
-                        </Picker>
+                        </Picker>}
                     </View>
+                    <TouchableOpacity
+                        onPress={() => { getLocationPermission(), setEditable(false) }}
+                        style={styles.buttonLocation}
+                    >
+                        <Iconss name="ios-location" size={28} color='white' />
+                        <Text style={styles.buttonText}>Share Location</Text>
+                    </TouchableOpacity>
 
+                    <Text style={styles.remarkLocation}>* Please share your location to get the accurate coordinate for your agrotourism spot</Text>
+
+                    {locationPermised && !editable && <View>
+                        {!latitude.trim() && !longitude.trim() ? <Text style={styles.coordinateContainer}>searching...</Text> : <View style={styles.coordinateContainer}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text> Your spot's coordinate is </Text>
+                                <TouchableOpacity>
+                                    <Icon name='pencil' onPress={() => { editLatLong() }} size={20} color='#38761D'></Icon>
+                                </TouchableOpacity>
+                            </View>
+                            <Text>( {latitude}, {longitude} )</Text>
+                        </View>}
+                    </View>}
+
+                    {locationPermised && editable && <View><View style={styles.latitudeContainer}>
+                        <Text style={styles.subtitle}>Latitude    </Text>
+                        <TextInput
+                            keyboardType='numeric'
+                            placeholder="Latitude"
+                            value={latitude}
+                            onChangeText={text => setLatitude(text)}
+                            style={styles.postcodeInput}
+                        /></View>
+
+                        <View style={styles.latitudeContainer}>
+                            <Text style={styles.subtitle}>Longitude</Text>
+                            <TextInput
+                                keyboardType='numeric'
+                                placeholder="Longitude"
+                                value={longitude}
+                                onChangeText={text => setLongitude(text)}
+                                style={styles.postcodeInput}
+                            /></View>
+                    </View>}
 
                     {/* Details  */}
                     <Text style={styles.subtitle}>Details
@@ -520,7 +708,7 @@ const Place = () => {
                         enablesReturnKeyAutomatically={true}
                         value={details}
                         onChangeText={text => setDetails(text)}
-                        style={styles.input}
+                        style={styles.detailsInput}
                     />
 
 
@@ -588,15 +776,16 @@ const styles = StyleSheet.create({
     },
 
     header: {
-        marginVertical: 15,
+        marginBottom: 10,
+        marginTop: 30,
         padding: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        alignContent: 'center'
     },
 
     title: {
-        paddingTop: 10,
         fontWeight: "bold",
         marginVertical: 4,
         fontSize: 20
@@ -604,7 +793,9 @@ const styles = StyleSheet.create({
 
     subtitle: {
         marginTop: 10,
-        paddingTop: 10
+        paddingTop: 10,
+        fontSize: 14,
+        paddingRight: 5
     },
 
     remark: {
@@ -612,6 +803,13 @@ const styles = StyleSheet.create({
         fontSize: 10,
         textAlign: 'center',
         marginBottom: 50
+    },
+
+    remarkLocation: {
+        color: 'rgb(210, 24, 0)',
+        fontSize: 10,
+        textAlign: 'center',
+        marginBottom: 20
     },
 
     uploading: {
@@ -627,20 +825,65 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderRadius: 10,
         marginTop: 5,
+        height: windowHeight * 0.07,
+        width: '100%'
+    },
+
+    postcodeInput: {
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 5,
+        height: windowHeight * 0.0725,
+        width: '40%'
+    },
+
+    inputText: {
+        fontSize: 14,
+        color: "black"
+    },
+
+    inputTextBlur: {
+        fontSize: 14,
+        color: 'rgba(135, 135, 135, 0.5)'
+    },
+
+    feeInput: {
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 5,
+        minHeight: windowHeight * 0.07,
+        maxHeight: windowHeight * 0.1,
+        width: '100%'
+    },
+
+    detailsInput: {
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 5,
+        minHeight: windowHeight * 0.07,
+        maxHeight: windowHeight * 0.4,
+        width: '100%'
     },
 
     pickerStyle: {
-        height: windowHeight * 0.02,
+        height: windowHeight * 0.06,
         width: windowWidth * 0.4,
         marginTop: 5,
         backgroundColor: 'rgba(0, 0, 0, 0.03)'
     },
 
-    DayPickerStyle: {
+    dayPickerStyle: {
         height: 45,
         width: 130,
         marginTop: 5,
-        backgroundColor: 'rgba(0, 0, 0, 0.03)'
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        borderRadius: 10
     },
 
     addressContainer: {
@@ -653,6 +896,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 1,
         justifyContent: 'flex-start',
+        alignContent: 'center'
     },
 
     button: {
@@ -666,13 +910,23 @@ const styles = StyleSheet.create({
         marginHorizontal: '30%'
     },
 
+    buttonLocation: {
+        backgroundColor: '#38761D',
+        width: '40%',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 15,
+        marginHorizontal: '30%'
+    },
+
     buttonSubmit: {
         backgroundColor: '#38761D',
         width: '20%',
         padding: 10,
         borderRadius: 10,
         alignItems: 'center',
-        marginTop: 10
     },
 
     buttonText: {
@@ -682,19 +936,12 @@ const styles = StyleSheet.create({
     },
 
     buttonTime: {
-        backgroundColor: 'rgb(183, 193, 172)',
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
         width: '30%',
         padding: 10,
         borderRadius: 10,
         alignItems: 'center',
         marginTop: 10
-    },
-
-    photoPreviewContainer: {
-        marginTop: 12,
-        flexDirection: 'row',
-        width: 200,
-        height: 200
     },
 
     cardImage: {
@@ -705,5 +952,55 @@ const styles = StyleSheet.create({
         marginBottom: 0,
         marginTop: 50,
         overflow: "hidden"
+    },
+
+    dateContainer: {
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 5,
+        height: windowHeight * 0.06,
+        width: windowWidth * 0.35,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+
+    inputSelection: {
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 5,
+        height: windowHeight * 0.06,
+        width: '45%',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+
+    dateTimeStyle: {
+        position: 'relative',
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+        width: '30%',
+        padding: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginTop: 10
+    },
+
+    coordinateContainer: {
+        backgroundColor: "rgba(238, 233, 241, 0.5)",
+        width: "90%",
+        padding: 10,
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignContent: 'center',
+        alignSelf: 'center'
+    },
+
+    latitudeContainer: {
+        flexDirection: 'row',
+        height: windowHeight * 0.0725,
+        marginBottom: 10
     }
 });
