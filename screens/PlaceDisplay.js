@@ -231,6 +231,10 @@ const PlaceDisplay = () => {
             })
     }
 
+    const getEventList = async () => {
+        return eventList;
+    }
+
     // to add bookmark or remove bookmark
     const addBookmark = async () => {
         if (bookmarked) {

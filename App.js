@@ -5,8 +5,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './screens/Login';
 import Main from './screens/Main';
+import HomeScreen from './screens/HomeScreen';
 import Place from './screens/Place';
 import PlaceDisplay from './screens/PlaceDisplay';
+import Filter from './screens/Filter';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +19,8 @@ export default function App() {
         
         <Stack.Group screenOptions={{ headerShown: false}}>
         <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
+        <Stack.Screen name="HomeScreen" component={HomeScreen}  />
+        <Stack.Screen name="Filter" component={Filter} />
         <Stack.Screen name="Place" component={Place} />
         <Stack.Screen name="PlaceDisplay" component={PlaceDisplay}  />
         </Stack.Group>

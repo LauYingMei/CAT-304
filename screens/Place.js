@@ -101,7 +101,7 @@ const Place = () => {
                     setFromTimeIsSet(true)
                     setToTimeIsSet(true)
 
-                    console.log("Get place info rmation successfully place: ", placeID)
+                    console.log("Get place information successfully place: ", placeID)
 
                 }
                 else {

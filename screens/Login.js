@@ -14,11 +14,12 @@ const Login = () => {
     useEffect(() => {
       const unsubscribe = auth.onAuthStateChanged(user => {
         if (user) {
-          //navigation.replace("Main")
+          navigation.replace("Main")
           //navigation.replace("Place",
           //{placeID: ""})
-          navigation.navigate('PlaceDisplay',
-          {placeID: "GBM7fvuiZg5DcQKqzyfb"})
+          // navigation.navigate('PlaceDisplay',
+          // {placeID: "GBM7fvuiZg5DcQKqzyfb"})
+          navigation.navigate('HomeScreen')
         }
       })
   
