@@ -78,8 +78,7 @@ export default SearchBar;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
     padding: 10,
-    width: '70%',
+    width: '65%',
   },
 });

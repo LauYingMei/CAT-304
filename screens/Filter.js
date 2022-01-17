@@ -1,6 +1,7 @@
 import React, {useState, useEffect}  from 'react'
 import { Dimensions, Image,StyleSheet, View, Text, TouchableOpacity, FlatList} from 'react-native';
 import { useNavigation } from '@react-navigation/native'
+import { MaterialCommunityIcons} from '@expo/vector-icons/';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '../firebase';
 import Header from '../screens/Header';
@@ -14,24 +15,65 @@ const windowHeight = Dimensions.get('window').height;
 const Filter = ()  => {
     const category = ['All','Farm', 'Park', 'Forest', 'Mountain', 'Other']
     const rating = ['All',1,2,3,4,5]
-    //const state = ['All', 'Johor', 'Kedah', 'Kelantan', 'Melaka', 'Negeri Sembilan', 'Pahang', 'Penang', 'Perak', 'Perlis', 'Sabah', 'Sarawak', 'Selangor', 'Terengganu', 'Wp Kuala Lumpur', 'Wp Labuan', 'Wp Putrajaya']
+    const state = ['All', 'Johor', 'Kedah', 'Kelantan', 'Melaka', 'Negeri Sembilan', 'Pahang', 'Penang', 'Perak', 'Perlis', 'Sabah', 'Sarawak', 'Selangor', 'Terengganu', 'Wp Kuala Lumpur', 'Wp Labuan', 'Wp Putrajaya']
     const [categoryTabChosen, setCategoryTabChosen] = useState('All')
     const [ratingTabChosen, setRatingTabChosen] = useState('All')
+    const [stateTabChosen, setStateTabChosen] = useState('All')
     const [place, setPlaces] = useState([]); 
+    const [showFilterModal, setShowFilterModal] = useState(false)
+    const [dataExist, setDataExist] = useState(false)
+    const [filterCount, setFilterCount] = useState(0)
 
     //Fetch data after filter is applied
     const FetchData = () => {
-        if(categoryTabChosen == "All" && ratingTabChosen == "All"){
-            var docRef = db.collection('Place').orderBy("rating", "desc");
+        setDataExist(false); 
+
+        //Category, Rating and State are chosen
+        if(categoryTabChosen != "All" && ratingTabChosen != "All" && stateTabChosen != "All"){
+            setFilterCount(3);
+            var docRef = db.collection('Place').where("category", "==", categoryTabChosen).where("state", "==", stateTabChosen);
         }
-        else if(ratingTabChosen == "All"){
+
+        //Category and Rating are chosen
+        else if(categoryTabChosen != "All" && ratingTabChosen != "All"){
+            setFilterCount(2);
+            var docRef = db.collection('Place').where("category", "==",categoryTabChosen);
+        }
+
+        //Category and State are chosen
+        else if(categoryTabChosen != "All" && ratingTabChosen != "All"){
+            setFilterCount(2);
+            var docRef = db.collection('Place').where("category", "==",categoryTabChosen);
+        }
+
+        //Rating and State are chosen
+        else if(ratingTabChosen != "All" && stateTabChosen != "All"){
+            setFilterCount(2);
+            var docRef = db.collection('Place').where("rating", ">=",ratingTabChosen);
+        }
+
+        //Only Category is chosen
+        else if(categoryTabChosen != "All"){
+            setFilterCount(1);
             var docRef = db.collection('Place').where("category", "==", categoryTabChosen);
         }
-        else if(categoryTabChosen == "All"){
+
+        //Only Rating is chosen
+        else if(ratingTabChosen != "All"){
+            setFilterCount(1);
             var docRef = db.collection('Place').where("rating", ">=", ratingTabChosen);
         }
-        else if(categoryTabChosen != "All" && ratingTabChosen != "All"){
-            var docRef = db.collection('Place').where("category", "==",categoryTabChosen);
+
+        //Only State is chosen
+        else if(stateTabChosen != "All"){
+            setFilterCount(1);
+            var docRef = db.collection('Place').where("state", "==", stateTabChosen);
+        }
+
+        //No filter applied
+        else{
+            setFilterCount(0);
+            var docRef = db.collection('Place').orderBy("rating", "desc");
         }
         
         docRef.get().then((querySnapshot) => {
@@ -39,23 +81,64 @@ const Filter = ()  => {
             
             if(categoryTabChosen != "All" && ratingTabChosen != "All"){
                 querySnapshot.forEach((doc) => {
-                    console.log(doc.id, " => ", doc.data()["spotName"], " => ", doc.data()["category"]);
                     if(doc.data()["rating"] >= ratingTabChosen){
+                        console.log(doc.data()["spotName"], " => ", doc.data()["category"], ",", doc.data()["rating"]);
                         place.push({
                         ...doc.data(),
                         id: doc.id,
                         });
+                        setDataExist(true);
+                    }                  
+                });
+                setPlaces(place);
+            }
+            else if(categoryTabChosen != "All" && stateTabChosen != "All"){
+                querySnapshot.forEach((doc) => {
+                    if(doc.data()["state"] == stateTabChosen){
+                        console.log(doc.data()["spotName"], " => ", doc.data()["category"], ",", doc.data()["state"]);
+                        place.push({
+                        ...doc.data(),
+                        id: doc.id,
+                        });
+                        setDataExist(true);
+                    }                  
+                });
+                setPlaces(place);
+            }
+            else if(ratingTabChosen != "All" && stateTabChosen != "All"){
+                querySnapshot.forEach((doc) => {
+                    if(doc.data()["state"] == stateTabChosen){
+                        console.log(doc.data()["spotName"], " => ", doc.data()["rating"], ",", doc.data()["state"]);
+                        place.push({
+                        ...doc.data(),
+                        id: doc.id,
+                        });
+                        setDataExist(true);
+                    }                  
+                });
+                setPlaces(place);
+            }
+            else if(categoryTabChosen != "All" && ratingTabChosen != "All" && stateTabChosen != "All"){
+                querySnapshot.forEach((doc) => {
+                    if(doc.data()["rating"] >= ratingTabChosen){
+                        console.log(doc.data()["spotName"], " => ", doc.data()["category"], ",", doc.data()["rating"], ",", doc.data()["state"]);
+                        place.push({
+                        ...doc.data(),
+                        id: doc.id,
+                        });
+                        setDataExist(true);
                     }                  
                 });
                 setPlaces(place);
             }
             else{
                 querySnapshot.forEach((doc) => {
-                    console.log(doc.id, " => ", doc.data()["spotName"], " => ", doc.data()["category"]);
-                        place.push({
-                            ...doc.data(),
-                            id: doc.id,
-                        });                 
+                    console.log(doc.data()["spotName"], " => ", doc.data()["category"], ",", doc.data()["rating"], ",", doc.data()["state"]);
+                    place.push({
+                        ...doc.data(),
+                        id: doc.id,
+                    });  
+                    setDataExist(true);               
                 });
                 setPlaces(place);
             }
@@ -64,14 +147,13 @@ const Filter = ()  => {
             console.log("Error getting category list: ", error);
         });
     }
-
+    
     //Filter category
     const FilterTextCategory = ({category}) => {       
         return (
           <TouchableOpacity 
           style={styles.filterTextContainer}
            onPress={() => { setCategoryTabChosen(category)
-           //alert("categoryTabChosen: "+ categoryTabChosen + "category: "+ category )
            }}>
             <Text 
              style={categoryTabChosen == category ? styles.filterTextFocus : styles.filterTextDefault}
@@ -80,10 +162,10 @@ const Filter = ()  => {
             </Text>
          </TouchableOpacity >
         );
-      };
+    };
 
-      //Filter rating
-      const FilterTextRating = ({rating}) => {       
+    //Filter rating
+    const FilterTextRating = ({rating}) => {       
         return (
           <TouchableOpacity 
           style={styles.filterTextContainer}
@@ -98,6 +180,22 @@ const Filter = ()  => {
         );
       };
 
+    //Filter state
+    const FilterTextState = ({state}) => {       
+        return (
+          <TouchableOpacity 
+          style={styles.filterTextContainer}
+           onPress={() => { setStateTabChosen(state)
+           }}>
+            <Text 
+             style={stateTabChosen == state ? styles.filterTextFocus : styles.filterTextDefault}
+             >
+                {state}
+            </Text>
+         </TouchableOpacity >
+        );
+      };
+
     //Display place image with name
     const Card = ({place}) => {
         const navigation = useNavigation()
@@ -106,54 +204,98 @@ const Filter = ()  => {
         <TouchableOpacity style={styles.card}
         onPress={() => navigation.navigate('PlaceDisplay',{placeID: place.id})}
         >
-            <Image style = {styles.image} source = {{uri: place.image[0].uri}}></Image>  
-            <Text style={{fontWeight: '500', fontSize: 20, padding:'5%'}}>{place.spotName}</Text>
+            <Image style = {styles.cardImage} source = {{uri: place.image[0].uri}}></Image>  
+            <Text style={styles.cardText}>{place.spotName}</Text>
             {Rating(place.rating)}
             
         </TouchableOpacity>
         );
     };
-    
 
-    return (
-        <SafeAreaView style={{height: windowHeight, backgroundColor:'white'}}>
-            {Header()}
-
-            {/* Category Filter */}
-            <View style = {styles.filterContainer}>
+    const FilterModal = () => {
+        return(
+            <View style={styles.FilterModal}>
+                {/* Category Filter */}
                 <Text style={styles.title}>Category</Text>
                 <FlatList 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
+                    vertical 
                     keyExtractor={item => item.index}
                     data = {category}
                     renderItem = {({item}) => <FilterTextCategory category = {item} />}
+                    numColumns={(6)}
+                    columnWrapperStyle={{flex: 1}} 
                     />  
-            </View>
 
-             {/* Rating Filter */}
-            <View style = {styles.filterContainer}>
+                {/* Rating Filter */}
                 <Text style={styles.title}>Rating</Text>
                 <FlatList 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
+                    vetical 
                     keyExtractor={item => item.index}
                     data = {rating}
                     renderItem = {({item}) => <FilterTextRating rating = {item} />}
+                    numColumns={(6)}
+                    columnWrapperStyle={{flex: 1}} 
                     />  
+                
+                {/* State Filter */}
+                <Text style={styles.title}>State</Text>
+                <FlatList 
+                    vetical 
+                    keyExtractor={item => item.index}
+                    data = {state}
+                    renderItem = {({item}) => <FilterTextState state = {item} />}
+                    numColumns={(3)}
+                    columnWrapperStyle={{flex: 1}} 
+                    />  
+
+                {/*Apply Filter Button */}
+                <TouchableOpacity 
+                onPress = {() => {FetchData(), setShowFilterModal(false)}} >
+                    <Text style = {styles.applyFilterButton}>Apply Filter</Text>  
+                </TouchableOpacity>
+            </View>
+        )
+    }
+    
+
+    return (
+        <SafeAreaView style={{height: windowHeight, width: windowWidth, backgroundColor:'white'}}>
+            <View style={{flexDirection: 'row', marginTop: "3%"}}>
+                <Text style={styles.filterTitle}>Filter</Text>
+                
+                <TouchableOpacity
+                    onPress={() => 
+                        {showFilterModal?setShowFilterModal(false): setShowFilterModal(true)}}
+                >
+                    <MaterialCommunityIcons 
+                        style={{marginLeft: "81%"}}
+                        name='tune' 
+                        size={30} 
+                        color='lightgrey' 
+                    />
+                </TouchableOpacity>
             </View>
 
-            {/*Apply Filter Button */}
-            <TouchableOpacity 
-            onPress = {() => { {FetchData()}}} >
-                <Text style = {styles.applyFilterButton}>Apply Filter</Text>  
-            </TouchableOpacity>
+            {showFilterModal===true && FilterModal()}
 
-             {/*Fetch all data for initial state */}
+            {/*Fetch all data for initial state */}
             {useEffect(() => {FetchData()},[])}
             
-             {/* Display relavent content */}
-            <View style={{height: '57%', marginTop: '3%'}}>
+            {/* Display relavent content */}
+            <View style = {styles.filterCount}>
+            {filterCount == 0 && <Text>No filter applied</Text>}
+            {filterCount == 1 && <Text>1 filter is applied</Text>}
+            {filterCount == 2 && <Text>2 filters are applied</Text>}
+            {filterCount == 3 && <Text>3 filters are applied</Text>}
+            </View>
+
+            {/* Display relavent content */}
+            {dataExist == false && filterCount != 0?
+            <View marginTop="50%" alignItems="center">
+                 <Image source={require('./../assets/image/SearchFail.png')} style={styles.image}/>
+                <Text >No item matching your search ! </Text>
+            </View>:
+            <View style={{marginBottom: '25%', marginTop: '3%'}}>
                 <FlatList 
                     vertical
                     keyExtractor={item => item.id}
@@ -164,36 +306,34 @@ const Filter = ()  => {
                     columnWrapperStyle={{flex: 1}}      
                     />     
             </View>
-
-            {Footer()}
+            }
         </SafeAreaView>
     );
 };
 
 //Style
 const styles = StyleSheet.create({
-    filterContainer:{
-        backgroundColor: 'white',
-        flexDirection: 'row',
-        height: '6%',
-        alignItems: 'center'
+    filterTitle:{
+        fontSize: 25, 
+        fontWeight: '600', 
+        marginLeft: "3%",
     },
     title:{
+        marginTop: '3%',
         marginLeft:'1%',
         fontWeight: 'bold', 
         fontSize: 20,
         width: '25%',
     },
     filterTextContainer:{
-        width: windowWidth*0.25,
         padding: 3,
     },
     filterTextDefault:{
         fontSize: 17,
-        borderWidth: 1,
         textAlign: 'center',
         borderRadius: 10,
-        borderColor: 'black',
+        backgroundColor: 'white',
+        padding: 5,
     },
     filterTextFocus:{
         fontSize: 17,
@@ -201,18 +341,28 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         borderRadius: 10,
         borderColor: 'green',
+        backgroundColor: 'white',
+        padding: 5,
     },
     card:{
-        marginTop: 5,
-        marginRight: 10,
+        marginTop: "2%",
+        marginLeft: "3%",
+        marginBottom: "2%",
         padding: 5,
         alignItems: 'center',
         borderRadius: 15,
         backgroundColor: '#f0f8ff',
-        width: windowWidth*0.48,
+        width: windowWidth*0.45,
         elevation: 10,
       },
-      image:{
+      cardText:{
+        fontWeight: '500', 
+        fontSize: 17, 
+        padding:'5%', 
+        marginBottom: '3%',
+        textAlign: 'center',
+      },
+      cardImage:{
         width: '100%',
         height: undefined,
         aspectRatio: 1.5,
@@ -226,9 +376,36 @@ const styles = StyleSheet.create({
         borderColor: 'green',
         backgroundColor: '#38761D',
         width: '30%',
-        padding: 10,
+        padding: 5,
         color: 'white',
         fontWeight: 'bold',
+        marginLeft: "65%",
+        marginBottom: '2%',
+        marginTop: '4%',
+        borderRadius: 10,
+      },
+      FilterModal:{
+        marginTop: '3%',
+        width: "93%",
+        marginLeft: "3%",
+        backgroundColor: 'rgba(211,229,207, 0.5)',
+        borderRadius: 20,
+        paddingLeft: 10,
+        paddingTop: 5,
+        paddingBottom: 10,
+      },
+      filterCount: {
+        backgroundColor: '#fff0f5',
+        marginLeft: '3%',
+        marginRight: '4%',
+        marginTop: '3%',
+        padding: 5,
+        borderRadius: 10,
+      },
+      image: {
+          height: "50%",
+          width: "40%",
+          resizeMode: 'stretch'
       }
 });
   

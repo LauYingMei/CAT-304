@@ -13,7 +13,6 @@ import SearchBar from './SearchBar';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-
 const HomeScreen = () => {
   
   const [place, setPlaces] = useState([]);
@@ -28,10 +27,9 @@ const HomeScreen = () => {
         style={styles.card}
         onPress={() => navigation.navigate('PlaceDisplay',{placeID: place.id})}
       >
-        <Image style = {styles.image} source = {{uri: place.image[0].uri}}></Image>  
-        <Text style={{fontWeight: '500', fontSize: 20, padding:'5%'}}>{place.spotName}</Text>
-        {Rating(place.rating)}
-        
+        <Image style = {styles.cardImage} source = {{uri: place.image[0].uri}}></Image>  
+        <Text style={styles.cardText}>{place.spotName}</Text>     
+        {Rating(place.rating)}    
     </TouchableOpacity>
     );
   };
@@ -41,15 +39,13 @@ const HomeScreen = () => {
 
     return (
       <TouchableOpacity 
-      style={styles.reviewContainer}
+      style={styles.eventContainer}
       onPress={() => navigation.navigate('PlaceDisplay',{placeID: eventList.placeID})}
       >
         <Text style={styles.subtitle}>{eventList.title}</Text>
         <Text style={styles.time}>Date: {moment.unix(eventList.fromDate.seconds).format("DD-MMM-YYYY (ddd)")} - {moment.unix(eventList.toDate.seconds).format("DD-MMM-YYYY (ddd)")}</Text>
         <Text style={styles.time}>Time: {eventList.fromTime} - {eventList.toTime}</Text>
         <Text style={styles.time}>Location: {eventList.spotName}</Text>
-        <Text style={{ fontWeight: 'bold', fontSize: 17 }}>{"\n"}Description: </Text>
-        <Text style={styles.content}>{eventList.description}</Text>
       </TouchableOpacity>
     );
   };
@@ -74,35 +70,32 @@ const HomeScreen = () => {
   };
   
   //Fetch data for events
-  const FetchEvent = () =>{
-    setEventList('')
-    db.collection('Place').get().then((querySnapshot) => {
-      querySnapshot.forEach((doc1) => {
-        db.collection('Place').doc(doc1.id).collection("events").orderBy("fromDate", "desc").get().then((querySnapshot) => {
+  const FetchEvent = () => {
+    db.collection('Event').orderBy("fromDate", "desc").get().then((querySnapshot) => {
+      const eventList = [];
 
           querySnapshot.forEach((doc) => {
-    
-              if (doc.data().toDate.toDate().setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
-                setEventList(eventList => { return ([...eventList, doc.data()])});
-                console.log("Get events information successfully: ", doc.data()["title"])
-              }
-          });
-        })
-        .catch((error) => {
-            console.log("Error getting documents: ", error);
+            console.log(doc.id, " => ", doc.data()["spotName"]);
+            eventList.push({
+              ...doc.data(),
+              id: doc.id,
+            });
         });
-      });       
+        setEventList(eventList);
     })
-  }
+    .catch((error) => {
+        console.log("Error getting events: ", error);
+    });
+  };
 
   return(
-    <KeyboardAvoidingView>
+    //<KeyboardAvoidingView>
       <SafeAreaView backgroundColor='white' height='100%' width='100%'>
         
         {Header()}
 
         {/*Search Bar*/}
-        <View flexDirection='row' justifyContent='space-evenly' marginTop='3%' marginRight='3%'>
+        <View flexDirection='row' justifyContent='space-evenly' marginRight='3%'>
           {SearchBar()}
           <TouchableOpacity onPress={() => navigation.navigate('Filter')}>
             <FontAwesome5 
@@ -126,7 +119,7 @@ const HomeScreen = () => {
             <FlatList 
             horizontal 
             showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.id}
+            keyExtractor={item => item.id.toString()}
             data = {eventList}
             renderItem = {({item}) => <Event eventList = {item} />}
             />   
@@ -139,7 +132,7 @@ const HomeScreen = () => {
           <Text style={styles.title}>Popular Places</Text> 
           <FlatList 
             vertical
-            keyExtractor={item => item.id}
+            keyExtractor={item => item.id.toString()}
             data = {place}
             renderItem = {({item}) => <Card place = {item} />}
             style={styles.container}
@@ -151,15 +144,16 @@ const HomeScreen = () => {
         {Footer()}
 
       </SafeAreaView>   
-    </KeyboardAvoidingView>  
+    //</KeyboardAvoidingView>  
   );
 };
 
 //Style
 const styles = StyleSheet.create({
   card:{
-    marginTop: 5,
-    marginRight: 10,
+    marginTop: "2%",
+    marginRight: "2%",
+    marginBottom: "2%",
     padding: 5,
     alignItems: 'center',
     borderRadius: 15,
@@ -167,39 +161,44 @@ const styles = StyleSheet.create({
     width: windowWidth*0.45,
     elevation: 10,
   },
-  icons:{
-    marginBottom: '20%',
-    marginTop: '90%',
+  cardText:{
+    fontWeight: '500', 
+    fontSize: 17, 
+    padding:'5%', 
+    marginBottom: '3%',
+    textAlign: 'center',
   },
-  image:{
+  cardImage:{
     width: '100%',
     height: undefined,
     aspectRatio: 1.5,
     borderRadius: 15,
     alignSelf: 'center',
   },
+  icons:{
+    marginBottom: '20%',
+    marginTop: '90%',
+  },
   title:{
     marginTop:'3%',
     marginLeft:'3%',
     fontWeight: 'bold', 
-    fontSize: 30,
+    fontSize: 25,
   },
-  reviewContainer: {
+  eventContainer: {
     backgroundColor: 'rgba(211,229,207, 0.5)',
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingBottom: 20,
     borderRadius: 10,
     marginTop: "3%",
     marginBottom: "7%",
     width: windowWidth*0.83,
-    height: 'auto',
-    marginLeft: 5,
+    marginRight: 10,
   },
   content: {
     textAlign: 'justify',
     alignItems: 'center',
     fontSize: 15,
-
   },
   subtitle: {
       fontWeight: 'bold',

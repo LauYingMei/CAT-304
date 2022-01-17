@@ -12,16 +12,17 @@ const Header = ()  => {
 //Style
 const styles = StyleSheet.create({
     header: {
-      paddingVertical: 10,
       flexDirection:'row',
       justifyContent: 'center',
       backgroundColor: 'white',
+      height: '13%',
+      alignItems: 'center',
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
     },
     header_text:{
-      marginTop: '5%',
-      color: '#20b2aa',
+      color: "#20b2aa",
       fontSize: 30,
-      textShadowColor: 'black',
       fontWeight: 'bold',
     },
 });
