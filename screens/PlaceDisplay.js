@@ -110,14 +110,14 @@ const PlaceDisplay = () => {
         const backAction = () => {
             navigation.replace("HomeScreen")
             return true;
-          };
-      
-          const backHandler = BackHandler.addEventListener(
+        };
+
+        const backHandler = BackHandler.addEventListener(
             "hardwareBackPress",
             backAction
-          );
-      
-          return () => backHandler.remove();
+        );
+
+        return () => backHandler.remove();
     }, [])
 
 
@@ -394,7 +394,7 @@ const PlaceDisplay = () => {
 
     // to run each button event for event section based on condition
     const eventButtonEvent = async () => {
-        
+
         if (addEvent) {
 
             if (eventTitle.trim() && description.trimStart() && description.trimEnd()
@@ -663,7 +663,7 @@ const PlaceDisplay = () => {
                                         placeholder='write your review here...'
                                         editable={editable}
                                         multiline
-                                        minHeight={windowHeight * 0.07}
+
                                         maxHeight={windowHeight * 0.15}
                                         value={review}
                                         onChangeText={text => setReview(text)}
@@ -678,22 +678,25 @@ const PlaceDisplay = () => {
                                         <Text style={styles.subtitle}>Your review</Text>
                                         <View style={styles.userReviewContainer}>
                                             <View style={styles.reviewRowContainer}>
-                                                <Icons name='ios-person-circle-outline' size={20}></Icons>
-                                                <Text style={styles.reviewerName}>{userReview.author}</Text>
+                                                <View style={{ justifyContent: 'flex-start', flexDirection: 'row', width: '100%' }}>
+                                                    <Icons name='ios-person-circle-outline' size={20}></Icons>
+                                                    <Text style={styles.reviewerName}>{userReview.author}</Text>
+                                                </View>
+                                                <View style={{ justifyContent: 'flex-end' }}>
+                                                    {<FlatList
+                                                        horizontal
+                                                        showsHorizontalScrollIndicator={false}
+                                                        keyExtractor={(item) => item.toString()}
+                                                        data={numArray}
 
-                                                {<FlatList
-                                                    horizontal
-                                                    showsHorizontalScrollIndicator={false}
-                                                    keyExtractor={(item) => item.toString()}
-                                                    data={numArray}
+                                                        renderItem={(newItem) => (
 
-                                                    renderItem={(newItem) => (
-
-                                                        <Rating num={newItem.item} ratingGiven={userReview.rating}
-                                                            keyExtractor={(newItem) => newItem}>
-                                                        </Rating>
-                                                    )}
-                                                />}
+                                                            <Rating num={newItem.item} ratingGiven={userReview.rating}
+                                                                keyExtractor={(newItem) => newItem}>
+                                                            </Rating>
+                                                        )}
+                                                    />}
+                                                </View>
                                             </View>
                                             <Text style={styles.time}>{moment.unix(userReview.timestamp.seconds).format("DD-MMM-YYYY HH:mm")}</Text>
                                             <Text style={styles.content}>{userReview.review}</Text>
@@ -708,22 +711,25 @@ const PlaceDisplay = () => {
                                             (
                                                 item.userID == userID ? null : <View style={styles.reviewContainer} key={index}>
                                                     <View style={styles.reviewRowContainer}>
-                                                        <Icons name='ios-person-circle-outline' size={20}></Icons>
-                                                        <Text style={styles.reviewerName}>{item.author}</Text>
+                                                        <View style={{ justifyContent: 'flex-start', flexDirection: 'row', width: '100%' }}>
+                                                            <Icons name='ios-person-circle-outline' size={20}></Icons>
+                                                            <Text style={styles.reviewerName}>{item.author}</Text>
+                                                        </View>
+                                                        <View style={{ justifyContent: 'flex-end' }}>
+                                                            {<FlatList
+                                                                horizontal
+                                                                showsHorizontalScrollIndicator={false}
+                                                                keyExtractor={(item) => item.toString()}
+                                                                data={numArray}
 
-                                                        {<FlatList
-                                                            horizontal
-                                                            showsHorizontalScrollIndicator={false}
-                                                            keyExtractor={(item) => item.toString()}
-                                                            data={numArray}
+                                                                renderItem={(newItem) => (
 
-                                                            renderItem={(newItem) => (
-
-                                                                <Rating num={newItem.item} ratingGiven={item.rating}
-                                                                    keyExtractor={(newItem) => newItem}>
-                                                                </Rating>
-                                                            )}
-                                                        />}
+                                                                    <Rating num={newItem.item} ratingGiven={item.rating}
+                                                                        keyExtractor={(newItem) => newItem}>
+                                                                    </Rating>
+                                                                )}
+                                                            />}
+                                                        </View>
                                                     </View>
                                                     <Text style={styles.time}>{moment.unix(item.timestamp.seconds).format("DD-MMM-YYYY HH:mm")}</Text>
                                                     <Text style={styles.content}>{item.review}</Text>
@@ -957,7 +963,8 @@ const PlaceDisplay = () => {
                                 <View style={styles.lineStyle}></View>
                             </View>
                             }
-                        </ScrollView>
+                        </ScrollView> 
+                        <View style={styles.lineStyle}></View>
                     </View>
 
                     {/*  Go Top Button  */}
@@ -1063,12 +1070,10 @@ const styles = StyleSheet.create({
     contentContainer: {
         width: windowWidth * 0.9,
         height: windowHeight * 0.5,
-        bottom: windowHeight * 0.04,
-        flexGrow: 1,
-        marginTop: 15,
+        flexGrow: 1,    
         marginBottom: 10,
         paddingBottom: 10,
-        paddingTop: 20
+        paddingTop: 5
     },
 
     content: {
@@ -1104,7 +1109,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginTop: 5,
         marginHorizontal: 5,
-        minHeight: windowHeight * 0.07
+        minHeight: 10
     },
 
     reviewContainer: {
@@ -1122,7 +1127,7 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         paddingBottom: 15,
         borderRadius: 10,
-        marginTop: 10,
+        marginTop: 10
     },
 
     leftArrowContainer: {
@@ -1156,8 +1161,6 @@ const styles = StyleSheet.create({
     reviewerName: {
         fontWeight: 'bold',
         color: 'rgba(11, 61, 42, 1)',
-        marginTop: 15,
-        width: '55%',
         marginLeft: 4
     },
 
@@ -1171,7 +1174,7 @@ const styles = StyleSheet.create({
     reviewRowContainer: {
         flexDirection: "row",
         marginVertical: 2,
-        alignItems: 'flex-end',
+        //alignItems: 'flex-end',
         justifyContent: 'space-around'
     },
 
