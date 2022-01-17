@@ -1,12 +1,40 @@
-import React from 'react'
+import React, {useState} from 'react';
 import { FontAwesome5 } from '@expo/vector-icons/';
 import { StyleSheet, View, TouchableOpacity} from 'react-native';
 import { useNavigation } from '@react-navigation/native'
-
+import { db, auth } from '../firebase';
 //Display footer
 const Footer = ()  => {
     const navigation = useNavigation();
+    const [user, setUser] = useState();
 
+
+    const accessControl = () => {
+      var docRef = db.collection("users").doc(auth.currentUser?.uid);
+  docRef.get().then((doc) => {
+      if (doc.exists) {
+         console.log("Hi:", doc.data());
+         setUser(doc.data());
+         if(doc.data().role=="owner"){
+          navigation.replace('Profile')
+         }
+         if(doc.data().role=="user"){
+          navigation.replace('editProfile')
+         }
+       
+          
+         
+  
+      } else {
+
+          console.log("No such document!");
+      }
+  }).catch((error) => {
+      console.log("Error getting document:", error);
+  });
+    
+    }
+    
     return (
         <View style={styles.footer}>
             {/* First Icon: HomeScreen */}
@@ -38,7 +66,7 @@ const Footer = ()  => {
                 size={30} 
                 color='#20b2aa'
                 onPress={() => {
-                navigation.navigate('Login')
+                accessControl()
                 }}/>
             </TouchableOpacity>
       </View> 
