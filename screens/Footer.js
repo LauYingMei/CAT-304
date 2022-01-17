@@ -16,10 +16,10 @@ const Footer = ()  => {
          console.log("Hi:", doc.data());
          setUser(doc.data());
          if(doc.data().role=="owner"){
-          navigation.replace('Profile')
+          navigation.navigate('Profile')
          }
          if(doc.data().role=="user"){
-          navigation.replace('editProfile')
+          navigation.navigate('userProfile')
          }
        
           

@@ -15,6 +15,7 @@ import editProfile from './screens/editProfile';
 import changePw from './screens/changePw';
 import resetForm from './screens/resetForm';
 import userProfile from './screens/userProfile';
+import userBookmark from './screens/userBookmark';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -23,13 +24,14 @@ export default function App() {
       <Stack.Navigator>
         
         <Stack.Group screenOptions={{ headerShown: false}}>
-        <Stack.Screen  name="Login" component={Login} />
-        <Stack.Screen   name="Register" component={Register}/>
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Register" component={Register}/>
         <Stack.Screen name="Profile" component={Profile}/>
         <Stack.Screen name="userProfile" component={userProfile}/>
         <Stack.Screen name="changePw" component={changePw}/>
         <Stack.Screen name="editProfile" component={editProfile}/>
         <Stack.Screen name="resetForm" component={resetForm}/>
+        <Stack.Screen name="userBookmark" component={userBookmark}/>
         <Stack.Screen name="HomeScreen" component={HomeScreen}  />
         <Stack.Screen name="Filter" component={Filter} />
         <Stack.Screen name="Place" component={Place} />

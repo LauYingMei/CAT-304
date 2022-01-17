@@ -1,60 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import {Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions} from 'react-native'
-import { useNavigation } from '@react-navigation/core';
-import { db, auth, createUserDocument } from '../firebase';
-import { borderBottomColor, borderColor } from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
-import Input from './Input';
+import {BackHandler,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions} from 'react-native'
+import { useNavigation } from '@react-navigation/core'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { forgetPw} from '../actions/userAction'
 
 const {width,height} = Dimensions.get('window')
 
+  const resetForm = () => {
+    const navigation = useNavigation()
+    
+    const [email, setEmail] = useState("");
+    const [confirmEmail, setconfirmEmail] = useState(-"");
+  
+  
+  const goBack = () => {
+    navigation.navigate("Login")
+}
+useEffect(() =>{    
+  
+ // control physical back button
+ const backAction = () => {
+   navigation.replace("Login")
+   return true;
+};
 
-export default class changePw extends React.Component{
- 
-  constructor(props){
-    super(props);
-   
-    this.state={
-      email:"",
-      password: "",
-      confirmPassword: "",           
-      secureTextEntry: true,
-      iconName:"eye-off",
-      isValid: null,
-    }
-  }
- 
+const backHandler = BackHandler.addEventListener(
+   "hardwareBackPress",
+   backAction
+);
 
-  handleSignOut = () => {
-    auth
-      .signOut()
-      .then(() => {
-        this.props.navigation.replace("Login")
-      })
-      .catch(error => alert(error.message))
-  }
+return () => backHandler.remove();
 
+}, []
+)
 
-  onIconPress= () => {
-    let iconName = (this.state.secureTextEntry) ? "eye" : "eye-off";
-
-    this.setState({
-      secureTextEntry: !this.state.secureTextEntry,
-      iconName: iconName
-    });
-  }
- 
-
-
-  render(){
-    const { isValid } = this.state;
-   
     return (
      
       <KeyboardAvoidingView
       style={styles.container}
-      behavior="padding"
+      
       >
      <ScrollView style={styles.innerContainer}>
      <View style={styles.content}>
@@ -66,8 +50,8 @@ export default class changePw extends React.Component{
      <Icon name="email" color="#13553b" size={18} style={styles.icon}/>
       <TextInput 
          placeholder="Email"
-          value={this.email}
-          onChangeText={email => this.setState({email})}
+          value={email}
+          onChangeText={text => setEmail(text)}
           style={styles.input}
 
         />
@@ -77,24 +61,26 @@ export default class changePw extends React.Component{
       <Icon name="checkbox-marked-circle" color="#13553b" size={18} style={styles.icon}/>
       <TextInput
     placeholder="Confirm Email"
-    value={this.state.confirmEmail}
+    value={confirmEmail}
     style={styles.input}
-    onChangeText={confirmEmail => this.setState({confirmEmail})}
+    onChangeText={ text => setconfirmEmail(text)}
 />
 </View>
 
       <View style={styles.inputLayout}>
-      <Button disabled={(this.state.email !==  this.state.confirmEmail )}  
-      onPress={() => {forgetPw(this.state.email)}} 
-      title="SUBMIT"/>
+      <Button disabled={(email !==  confirmEmail )||(!email.trim())||(!confirmEmail.trim())}  
+      onPress={() => {forgetPw(email)}} 
+      title="SUBMIT"
+      color='#38761D'
+      />
 
-<View style={styles.container}>
-      <Text>Email: {auth.currentUser?.email}</Text>
+<View style={styles.content}>
+      
       <TouchableOpacity
-        onPress={this.handleSignOut}
+        onPress={goBack}
         style={styles.button}
       >
-        <Text style={styles.buttonText}>Sign out</Text>
+        <Text style={styles.buttonText}>Back to Login Screen</Text>
       </TouchableOpacity>
     </View>
 
@@ -102,8 +88,8 @@ export default class changePw extends React.Component{
      </ScrollView>
      </KeyboardAvoidingView>
     );
-  }
-} 
+    }
+    export default resetForm
 
 
 
@@ -122,10 +108,10 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     marginBottom: 20,
     backgroundColor: '#fff',
-    borderRadius: 20
+    borderRadius: 20,
   },
   content:{
-    paddingTop: 20,
+    paddingTop: height*.1,
     paddingBottom: 20,
     alignItems: 'center',
   },
@@ -150,7 +136,7 @@ const styles = StyleSheet.create({
           color:"#10523a",
           fontWeight: "bold",
           marginVertical: 4,
-          fontSize: 21,
+          fontSize: 28,
       },
         
           icon:{paddingTop: 30,},
@@ -166,27 +152,20 @@ const styles = StyleSheet.create({
           },
 
           button: {
-            backgroundColor: '#38761D',
-            width: '100%',
+            backgroundColor: '#9cd548',
+            width: '60%',
             padding: 15,
+            margin: 16,
             borderRadius: 10,
             alignItems: 'center',
           },
-
+          buttonText: {
+            color: 'black',
+            fontWeight: '700',
+            fontSize: 16,
+          },
     
       }
       );
-      const pickerSelectStyles = StyleSheet.create({
-        inputIOS: {
-            fontSize: 16,
-            paddingTop: 13,
-            paddingHorizontal: 10,
-            paddingBottom: 12,
-            borderWidth: 1,
-            borderColor: 'gray',
-            borderRadius: 4,
-            backgroundColor: 'white',
-            color: 'black',
-        },
-    });
+     
       

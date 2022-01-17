@@ -23,12 +23,28 @@ export default class changePw extends React.Component{
       isValid: null,
     }
   }
- 
+      
 
   goBack = () => {
-   
-    this.props.navigation.replace("Profile")
-  
+    var docRef = db.collection("users").doc(auth.currentUser?.uid);
+    console.log(auth.currentUser?.uid);
+    docRef.get().then((doc) => {
+        if (doc.exists) {
+           console.log("Document data:", doc.data());
+           if(doc.data().role=="owner"){
+            this.props.navigation.navigate("Profile")
+           }
+           if(doc.data().role=="user"){
+            this.props.navigation.navigate("userProfile")
+           }     
+        } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+        }
+    }).catch((error) => {
+        console.log("Error getting document:", error);
+    });
+    
 }
 
 
@@ -50,7 +66,6 @@ export default class changePw extends React.Component{
      
       <KeyboardAvoidingView
       style={styles.container}
-      behavior="padding"
       >
      <ScrollView style={styles.innerContainer}>
      <View style={styles.content}>
@@ -58,8 +73,9 @@ export default class changePw extends React.Component{
     Reset Your Password Here  
       </Text>
      </View>
+    
      <View style={styles.registerForm}>
-      <Icon name="checkbox-marked-circle" color="#13553b" size={18} style={styles.icon}/>
+      <Icon name="account-key" color="#13553b" size={18} style={styles.icon}/>
       <TextInput
 
     placeholder="Old Password"
@@ -245,7 +261,11 @@ const styles = StyleSheet.create({
             borderRadius: 10,
             alignItems: 'center',
           },
-
+          buttonText: {
+            color: 'black',
+            fontWeight: '700',
+            fontSize: 16,
+          },
         content:{
           paddingTop: height*.1,
           alignItems: 'center',

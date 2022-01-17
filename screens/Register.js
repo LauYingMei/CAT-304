@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import {Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions} from 'react-native'
+import React, { useNavigation,useState, useEffect } from 'react';
+import {BackHandler,Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions} from 'react-native'
 import {MaterialCommunityIcons as Icon} from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/core';
-import { db, auth } from '../firebase';
+import { auth } from '../firebase';
 import Input from './Input';
 import { addNewUser } from '../actions/userAction';
 const {width,height} = Dimensions.get('window')
@@ -26,6 +25,21 @@ export default class Register extends React.Component{
     }
   }
   
+  backAction = () => {
+    this.props.navigation.replace("Login")
+    return true;
+};
+
+componentDidMount() {
+  this.backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    this.backAction
+  );
+}
+
+componentWillUnmount() {
+  this.backHandler.remove();
+}
 
   onIconPress= () => {
     let iconName = (this.state.secureTextEntry) ? "eye" : "eye-off";
@@ -56,6 +70,11 @@ handleRegister = () => {
   addNewUser(auth.currentUser?.email,ContactNo,role,userName);
 }
 
+  goBack = () => {
+   
+  this.props.navigation.replace("Login")
+
+}
  
 
   render(){
@@ -65,13 +84,15 @@ handleRegister = () => {
      
       <KeyboardAvoidingView
       style={styles.container}
-      behavior="padding"
       >
      <ScrollView style={styles.innerContainer}>
+      <View style={styles.content}>
      <Text style={styles.title}>
-     &nbsp;&nbsp;&nbsp;&nbsp;Welcome!&nbsp; Register Here &nbsp;    
+     Welcome!&nbsp; Register Here
       </Text>
+     </View>
      <View style= {styles.registerForm}>
+     <Icon name="email" color="#13553b" size={25} style={styles.icon}/>
       <TextInput
           placeholder="Email"
           value={this.email}
@@ -79,6 +100,8 @@ handleRegister = () => {
           style={styles.input}
         />
       </View>
+      <View style= {styles.registerForm}>
+      <Icon name="account-details" color="#13553b" size={25} style={styles.icon}/>
       <TextInput
           style={styles.registerForm}
           placeholder="User Name"
@@ -86,6 +109,9 @@ handleRegister = () => {
           onChangeText={userName => this.setState({userName})}
           style={styles.input}
           />
+      </View>
+      <View style= {styles.registerForm}>
+      <Icon name="phone" color="#13553b" size={25} style={styles.icon}/> 
          <TextInput
           style={styles.registerForm}
           placeholder="Contact Number"
@@ -94,19 +120,28 @@ handleRegister = () => {
           style={styles.input}
           keyboardType="phone-pad"
          />
-   
-   
+        </View>
+        <View style={styles.infoBoxWrapper}>
+        <View style={[styles.infoBox, {
+            borderRightColor: '#dddddd',
+            borderRightWidth: 1
+          }]}>
+           <Icon name="account-box" color="#13553b" size={25} style={styles.iconRole}/> 
+        </View>
+        <View style={styles.info}>  
                <Picker 
                prompt= "Choose a role"
                selectedValue = {this.role} 
                onValueChange = {(role) =>  this.setState({ role })}>
-               <Picker.Item label = "-select-" value = "" />
+               <Picker.Item label = "-select a role-" value = "" />
                <Picker.Item label = "user" value = "user" />
                <Picker.Item label = "owner" value = "owner" />
             </Picker>
+        </View>
+        </View>
 
       <View style= {styles.registerForm}>
-      
+      <Icon name="key" color="#13553b" size={18} style={styles.icon}/>
       <Input {...this.props}
       placeholder="Password"
       value={this.state.password}
@@ -120,7 +155,6 @@ handleRegister = () => {
             '(?=.[!@#$%^&])', // special character
           ]}
           onValidation={isValid => this.setState({ isValid })}
-
       />
      
      <TouchableOpacity onPress={this.onIconPress}>
@@ -128,22 +162,17 @@ handleRegister = () => {
           style={styles.icon}
         />
       </TouchableOpacity>
-      
       </View>
 
      
       <View style={styles.registerForm}>
-
+      <Icon name="checkbox-marked-circle" color="#13553b" size={18} style={styles.icon}/>
       <TextInput
-
-    placeholder="Confirm Password"
-
-    value={this.state.confirmPassword}
-    secureTextEntry={this.state.secureTextEntry}
-
-    style={styles.input}
-
-    onChangeText={confirmPassword => this.setState({confirmPassword})}
+      placeholder="Confirm Password"
+      value={this.state.confirmPassword}
+      secureTextEntry={this.state.secureTextEntry}
+      style={styles.input}
+      onChangeText={confirmPassword => this.setState({confirmPassword})}
 
 />
 <TouchableOpacity onPress={this.onIconPress}>
@@ -154,7 +183,7 @@ handleRegister = () => {
 
 </View>
 
-      <View>
+        <View style={styles.condition}>
           <Text style={{ color: isValid && isValid[0] ? 'green' : 'red' }}>
             Rule 1: Min 6 chars
           </Text>
@@ -176,11 +205,24 @@ handleRegister = () => {
 
       <View style={styles.inputLayout}>
 
-      <Button disabled={(this.state.password !==  this.state.confirmPassword )||(!isValid)}  
+      <Button disabled={(this.state.password !==  this.state.confirmPassword )||(!isValid)||
+      (!this.state.email.trim())||(!this.state.ContactNo.trim())||(!this.state.role.trim())||
+      (!this.state.password.trim())||(!this.state.confirmPassword.trim())||(!this.state.userName.trim())}  
       onPress={() => this.handleRegister()} 
-      title="SUBMIT"/>
+      title="SUBMIT"
+      color='#38761D'
+      />
+      </View>
 
-</View>
+      <View style={styles.content}> 
+      <TouchableOpacity
+        onPress={this.goBack}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Back to Login Screen</Text>
+      </TouchableOpacity>
+    </View>
+
      </ScrollView>
      </KeyboardAvoidingView>
     );
@@ -206,6 +248,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 20
   },
+  condition:{
+    paddingTop:20,
+    paddingBottom: 20,
+  },
         registerForm: {
           borderBottomWidth: .5, 
           flexDirection:"row",
@@ -229,13 +275,11 @@ const styles = StyleSheet.create({
           marginVertical: 4,
           fontSize: 21,
       },
-        icon:{
-            alignItems:'flex-end',
-            paddingTop: 30,
-            },
+      icon:{paddingTop: 30,},
+      iconRole:{paddingTop: 15,},
             inputLayout: {
 
-              paddingBottom: 20,
+              paddingBottom: 5,
       
           },
           input: {
@@ -249,33 +293,39 @@ const styles = StyleSheet.create({
           },
 
           button: {
-            backgroundColor: '#38761D',
-            width: '100%',
+            backgroundColor: '#9cd548',
+            width: '60%',
             padding: 15,
+            margin: 16,
             borderRadius: 10,
             alignItems: 'center',
           },
-
+          buttonText: {
+            color: 'black',
+            fontWeight: '700',
+            fontSize: 16,
+          },
           pickerStyle: {
             height: height * 0.02,
             width: width * 0.4,
             marginTop: 5,
             backgroundColor: 'rgba(0, 0, 0, 0.03)'
         },
-    
+        content:{
+          paddingTop: 0,
+          alignItems: 'center',
+        },
+        info: {
+          width: '90%',
+          borderRightColor: '#dddddd',
+          borderRightWidth: 1
+        },
+        infoBoxWrapper: {
+          flexDirection: 'row',
+        },
+        infoBox: {
+          width: '10%',
+        },
       }
       );
-      const pickerSelectStyles = StyleSheet.create({
-        inputIOS: {
-            fontSize: 16,
-            paddingTop: 13,
-            paddingHorizontal: 10,
-            paddingBottom: 12,
-            borderWidth: 1,
-            borderColor: 'gray',
-            borderRadius: 4,
-            backgroundColor: 'white',
-            color: 'black',
-        },
-    });
-      
+     

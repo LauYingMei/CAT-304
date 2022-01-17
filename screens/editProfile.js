@@ -1,6 +1,6 @@
 import { useNavigation} from '@react-navigation/core'
 import React, { useState, useEffect } from 'react'
-import {Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions} from 'react-native'
+import {Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions,BackHandler} from 'react-native'
 import { auth,db} from '../firebase'
 import { updateUser } from '../actions/userAction'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -22,7 +22,23 @@ const editProfile = () => {
   useEffect(async () => {
        
     await setAll();
-  
+  // control physical back button
+  const backAction = () => {
+    if(user.role=="owner"){
+      navigation.navigate("Profile")
+     }
+     if(user.role=="user"){
+      navigation.navigate("userProfile")
+     }     
+    return true;
+};
+
+const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+);
+
+return () => backHandler.remove();
  }, [getData]
  )
  
@@ -52,8 +68,12 @@ const editProfile = () => {
    });
    }
   const goBack = () => {
-   
-        navigation.replace("Profile")
+   if(user.role=="owner"){
+    navigation.navigate("Profile")
+   }
+   if(user.role=="user"){
+    navigation.navigate("userProfile")
+   }     
       
   }
   const data = {
@@ -68,7 +88,6 @@ const editProfile = () => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior="padding"
       >
      <ScrollView style={styles.innerContainer}>
      <View style={styles.content}>
@@ -122,7 +141,7 @@ const editProfile = () => {
                prompt= "Choose a role"
                selectedValue = {role} 
                onValueChange = {(selectedRole) =>  setRole(selectedRole)}>
-               <Picker.Item label = "-select-" value = "" />
+               <Picker.Item label = "-select a role-" value = "" />
                <Picker.Item label = "user" value = "user" />
                <Picker.Item label = "owner" value = "owner" />
             </Picker>
@@ -149,6 +168,7 @@ const editProfile = () => {
         <Text style={styles.buttonText}>Back to Profile Screen</Text>
       </TouchableOpacity>
     </View>
+    <Text style={styles.alert}>**You may need to login again to refresh your profile page if you have updated the role* *</Text>
      </ScrollView>
      </KeyboardAvoidingView>
     );
@@ -238,6 +258,11 @@ const styles = StyleSheet.create({
         },
         buttonText: {
           color: 'black',
+          fontWeight: '700',
+          fontSize: 16,
+        },
+        alert:{
+          color: 'red',
           fontWeight: '700',
           fontSize: 16,
         },

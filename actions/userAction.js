@@ -63,17 +63,10 @@ export async function deleteAccount(userID) {
         });
 
 }
-/*const reauthenticate = (currentPassword) => {
-    var user = firebase.auth().currentUser;
-    var cred = firebase.auth.EmailAuthProvider.credential(
-        user.email, currentPassword);
-    return user.reauthenticateWithCredential(cred);
-  }*/
 
-export async function reauthenticate(){
+export async function reauthenticate(currentPassword){
   const user = firebase.auth().currentUser;
 
-  // TODO(you): prompt the user to re-provide their sign-in credentials
   const credential = firebase.auth.EmailAuthProvider.credential(
     user.email, currentPassword);
   
@@ -82,20 +75,22 @@ export async function reauthenticate(){
   }).catch((error) => {
     console.log("Error updating password: ", error.message)
   });
-}
+    return user.reauthenticateWithCredential(credential);
+  }
+
 //reset password
 export async function resetPw(currentPassword,newPassword) {
-   
+    reauthenticate(currentPassword).then(() => {
         const user = firebase.auth().currentUser;
 
         user.updatePassword(newPassword).then(() => {
             Alert.alert("Password is updated!");
-            reauthenticate(currentPassword)
+            
         }).catch((error) => {
             console.log("Error updating password: ", error.message)
         });
-    }
-
+    });
+}
 
 
 //forget password
@@ -106,18 +101,7 @@ export async function forgetPw(email) {
     .then(function() {  
         Alert.alert("Please check your email");
     })
-    .catch(function(error) {
-        //Alert.alert("Please re-enter your valid email");
-        console.log("Error updating password")
-    });
+    .catch(
+        error => alert(error.message)
+    );
 }
-/*
-export async function forgetPw(email,password) {
-    
-var user = firebase.auth().currentUser;
-var credentials = firebase.auth.EmailAuthProvider.credential(
-  email,
-  password,
-);
-user.reauthenticateWithCredential(credentials);
-}*/

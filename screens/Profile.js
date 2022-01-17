@@ -1,19 +1,17 @@
 import { useNavigation } from '@react-navigation/core'
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect} from 'react';
 import { db, auth } from '../firebase';
 import { deleteAccount } from '../actions/userAction';
-import {  Alert, View, StyleSheet, SafeAreaView,Dimensions} from 'react-native';
+import {  Alert, View, StyleSheet, SafeAreaView,Dimensions,BackHandler} from 'react-native';
 import {
   Title,
-  Caption,
   Text,
   TouchableRipple,
 } from 'react-native-paper';
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const {width,height} = Dimensions.get('window')
-//import editForm from './editForm';
-//https://github.com/itzpradip/Food-Finder-React-Native-App/blob/master/screens/ProfileScreen.js
+
 
 const Profile = () => {
   const navigation = useNavigation()
@@ -33,7 +31,19 @@ const Profile = () => {
       }
  useEffect(() =>{    
    setAll();
- 
+  // control physical back button
+  const backAction = () => {
+    navigation.replace("HomeScreen")
+    return true;
+};
+
+const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+);
+
+return () => backHandler.remove();
+
 }, [getData]
 )
 const setAll = () => {
@@ -60,7 +70,14 @@ const setAll = () => {
       console.log("Error getting document:", error);
   });
   }
-
+  const handleSignOut = () => {
+    auth
+      .signOut()
+      .then(() => {
+        navigation.replace("Login")
+      })
+      .catch(error => alert(error.message))
+  }
 // to delete the account
 const deleteAcc = () => {
   Alert.alert("Delete", "Are You Sure?", [
@@ -129,7 +146,12 @@ const deleteAcc = () => {
             <Text style={styles.menuItemText}>Delete account</Text>
           </View>
         </TouchableRipple>
-       
+        <TouchableRipple onPress={handleSignOut}>
+          <View style={styles.menuItem}>
+            <Icon name="logout" color="#FF6347" size={25}/>
+            <Text style={styles.menuItemText}>Sign out</Text>
+          </View>
+        </TouchableRipple>
         
       </View>
     </SafeAreaView>

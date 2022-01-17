@@ -1,8 +1,7 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
-import { KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,Image,ScrollView,Modal,Button } from 'react-native'
+import { KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,Image,ScrollView } from 'react-native'
 import { auth } from '../firebase'
-import { Ionicons } from '@expo/vector-icons'
 import Icon from 'react-native-vector-icons/FontAwesome5'
 import { Dimensions } from 'react-native';
 
@@ -14,8 +13,6 @@ const Login = () => {
     const [password, setPassword] = useState('')
     const navigation = useNavigation()
     const [hidePass, setHidePass] = useState(true)
-    const [isModalVisible, setModalVisible] = useState(false);
-    const [inputValue, setInputValue] = useState("");
 
     useEffect(() => {
       const unsubscribe = auth.onAuthStateChanged(user => {
@@ -36,6 +33,7 @@ const Login = () => {
   
       return unsubscribe
     }, [])
+    
 
     const handleSignUp = () => {
       navigation.replace("Register")
@@ -49,23 +47,22 @@ const Login = () => {
             console.log('Logged in with:', user.email);
           })
           .catch(error => alert(error.message))
-      }
+      }  
+        
       const handlePasswordChange = () => {
-        navigation.replace("resetForm");
+        navigation.navigate("resetForm");
       }
-      const toggleModalVisibility = () => {
-        setModalVisible(!isModalVisible);
-    };
+    
     return (
       
       <ScrollView showsVerticalScrollIndicator={false} >
       <KeyboardAvoidingView
       style={styles.container}
-      behavior="padding"
     >
-
-    <Image height={300} width= {400} source={require('./../assets/image/Logo.png')} style={styles.logoImg}/>
-
+<View>
+<Image height={300} width= {400} source={require('./../assets/image/Logo.png')} style={styles.logoImg}/>
+</View>
+  
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Email"
@@ -129,7 +126,7 @@ const Login = () => {
           padding: 50,
           alignItems: 'center',
           backgroundColor:'#d4ffb8',
-          height: height,
+          height: height*1.05,
         },
         inputContainer: {
           width: width*0.8,
@@ -143,7 +140,6 @@ const Login = () => {
           marginTop: 5,
         },
         icon:{
-         // flex:1,
            paddingLeft:width*0.63,
            alignItems:'flex-end',
            },
