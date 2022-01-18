@@ -57,36 +57,40 @@ const Login = () => {
       
       <ScrollView showsVerticalScrollIndicator={false} >
       <KeyboardAvoidingView
-      style={styles.container}
-    >
-<View>
-<Image height={300} width= {400} source={require('./../assets/image/Logo.png')} style={styles.logoImg}/>
-</View>
+      style={styles.container}>
+
+      <View>
+      <Image height={300} width= {400} source={require('./../assets/image/Logo.png')} style={styles.logoImg}/>
+      </View>
   
       <View style={styles.inputContainer}>
+       
         <TextInput
           placeholder="Email"
           value={email}
           onChangeText={text => setEmail(text)}
           style={styles.input}
         />
-       
-         <TextInput
+      
+      
+       <TextInput
           placeholder="Password"
           value={password}
           onChangeText={text => setPassword(text)}
           style={styles.input}
           secureTextEntry={hidePass ? true : false}
         /> 
-      </View>
-
-      <Icon
+        <Icon
           name={hidePass ? 'eye-slash' : 'eye'}
           size={15}
           color="grey"
           onPress={() => setHidePass(!hidePass)}
           style={styles.icon}
         />
+      </View>
+     
+
+      
       <View style={styles.buttonContainer}>
      
         <TouchableOpacity
@@ -128,6 +132,7 @@ const Login = () => {
           backgroundColor:'#d4ffb8',
           height: height*1.05,
         },
+      
         inputContainer: {
           width: width*0.8,
           height: height*0.15,
@@ -140,7 +145,7 @@ const Login = () => {
           marginTop: 5,
         },
         icon:{
-           paddingLeft:width*0.63,
+           paddingLeft:width*0.75,
            alignItems:'flex-end',
            },
           
@@ -184,5 +189,5 @@ const Login = () => {
           fontWeight: '700',
           fontSize: 16,
         },
-      
+       
       })

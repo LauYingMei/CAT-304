@@ -29,7 +29,7 @@ const Footer = ()  => {
     var docRef = db.collection("users").doc(auth.currentUser?.uid);
     docRef.get().then((doc) => {
     if (doc.exists) {
-        console.log("Hi:", doc.data());
+        console.log("User:", doc.data());
         setUser(doc.data());
         if(doc.data().role=="owner"){
         navigation.navigate('Profile')

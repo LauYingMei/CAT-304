@@ -172,8 +172,8 @@ export default class changePw extends React.Component{
       title="SUBMIT"
       color='#38761D'
       />
-
-<View style={styles.content}>
+</View>
+<View style={styles.buttonBack}>
       
       <TouchableOpacity
         onPress={this.goBack}
@@ -183,7 +183,7 @@ export default class changePw extends React.Component{
       </TouchableOpacity>
     </View>
 
-</View>
+
      </ScrollView>
      </KeyboardAvoidingView>
     );
@@ -209,30 +209,19 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   content:{
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop: height*.1,
     alignItems: 'center',
   },
   condition:{
     paddingTop:20,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
         registerForm: {
           borderBottomWidth: .5, 
           flexDirection:"row",
           
         },
-        input: {
-          flex:1,
-          width: width*0.8,
-          height: height*0.05,
-          color:"#fff",
-          paddingHorizontal: 15,
-          paddingVertical: 10,
-          borderRadius: 10,
-          marginTop: 5,
-
-        },
+       
         title: {
           paddingTop: 10,
           color:"#10523a",
@@ -242,10 +231,10 @@ const styles = StyleSheet.create({
       },
         
           icon:{paddingTop: 30,},
-      
+          inputLayout: {paddingTop: 30,},
           input: {
             height: 48,
-            width: '80%',
+            width: width*.6,
             padding: 8,
             margin: 16,
             borderColor: 'gray',
@@ -255,7 +244,7 @@ const styles = StyleSheet.create({
 
           button: {
             backgroundColor: '#9cd548',
-            width: '60%',
+            width: width*.6,
             padding: 15,
             margin: 16,
             borderRadius: 10,
@@ -270,7 +259,10 @@ const styles = StyleSheet.create({
           paddingTop: height*.1,
           alignItems: 'center',
         },
-    
+        buttonBack:{
+          paddingTop: height*.01,
+          alignItems: 'center',
+        },
       }
       );
     

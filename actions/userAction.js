@@ -25,7 +25,7 @@ export async function updateUser(user, userID) {
         })
 }
 
-// add new event
+// add new user
 export async function addNewUser(email,ContactNo, role, userName) {
 
     
@@ -105,3 +105,54 @@ export async function forgetPw(email) {
         error => alert(error.message)
     );
 }
+// delete particular bookmark
+export async function DeleteBookmark(userID, bookmarkID) {
+    await db.collection("users").doc(userID)
+        .collection("bookmarks").doc(bookmarkID)
+        .delete().then(() => {
+            console.log("Bookmark successfully deleted!")
+            Alert.alert("Bookmark Removed!");
+        }).catch((error) => {
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log("Error removing bookmark: ", error(message))
+        })
+
+}
+
+
+// delete all bookmark
+export async function clearBookmark(userID) {
+    await db.collection("users").doc(userID)
+        .collection("bookmarks")
+        .get()
+        .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+        doc.ref.delete();
+        });
+        console.log("All Bookmark successfully deleted!")
+            Alert.alert("All Bookmark Removed!");
+        })
+        .catch((error) => {
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log("Error removing all bookmarks: ", error(message))
+        });
+    };
+/*
+// delete all places and events
+
+export async function clearPlaces(userID) {
+    await db.collection("places").where("userID", "==", userID)
+        .get()
+        .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+        doc.ref.delete();
+        });
+        console.log("All Places successfully deleted!")
+            Alert.alert("All Places Removed!");
+        })
+        .catch((error) => {
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log("Error removing all places: ", error(message))
+        });
+    };
+*/

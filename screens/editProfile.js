@@ -69,9 +69,11 @@ return () => backHandler.remove();
    }
   const goBack = () => {
    if(user.role=="owner"){
+     setAll()
     navigation.navigate("Profile")
    }
    if(user.role=="user"){
+     setAll()
     navigation.navigate("userProfile")
    }     
       
@@ -153,7 +155,7 @@ return () => backHandler.remove();
       <View style={styles.inputLayout}>
 
       <Button   
-      onPress={()=>updateUser(data,userID)} 
+      onPress={()=>updateUser(data,userID,goBack)} 
       title="SUBMIT"
       color='#38761D'
       />
@@ -168,7 +170,7 @@ return () => backHandler.remove();
         <Text style={styles.buttonText}>Back to Profile Screen</Text>
       </TouchableOpacity>
     </View>
-    <Text style={styles.alert}>**You may need to login again to refresh your profile page if you have updated the role* *</Text>
+    <Text style={styles.alert}>**You may need to login again to refresh your profile page**</Text>
      </ScrollView>
      </KeyboardAvoidingView>
     );
@@ -200,17 +202,7 @@ const styles = StyleSheet.create({
           flexDirection:"row",
           
         },
-        input: {
-          flex:1,
-          width: width*0.8,
-          height: height*0.05,
-          color:"#fff",
-          paddingHorizontal: 15,
-          paddingVertical: 10,
-          borderRadius: 10,
-          marginTop: 5,
-
-        },
+        
         title: {
          
           color:"#10523a",
@@ -221,10 +213,10 @@ const styles = StyleSheet.create({
    
         icon:{paddingTop: 30,},
         iconRole:{paddingTop: 15,},
-        inputLayout: {paddingTop: 30,},
+        inputLayout: {paddingTop: 20,},
           input: {
             height: 48,
-            width: '80%',
+            width: width*.65,
             padding: 8,
             margin: 16,
             borderColor: 'gray',
@@ -234,7 +226,7 @@ const styles = StyleSheet.create({
 
           button: {
             backgroundColor: '#9cd548',
-            width: '60%',
+            width: width*.6,
             padding: 15,
             margin: 16,
             borderRadius: 10,

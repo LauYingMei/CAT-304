@@ -8,7 +8,7 @@ import {
   Text,
   TouchableRipple,
 } from 'react-native-paper';
-
+import { clearPlaces } from '../actions/userAction';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const {width,height} = Dimensions.get('window')
 
@@ -29,7 +29,11 @@ const Profile = () => {
     const handleResetPw = () => {
       navigation.replace("changePw")
       }
+      const handlePosts = () => {
+        navigation.replace("placeList")
+        }
  useEffect(() =>{    
+   
    setAll();
   // control physical back button
   const backAction = () => {
@@ -84,7 +88,8 @@ const deleteAcc = () => {
       {
           text: "Yes",
           onPress: () => (
-              deleteAccount(userID)
+              deleteAccount(userID),
+              navigation.navigate("Login")
           )
       },
       { text: "No" },
@@ -92,6 +97,7 @@ const deleteAcc = () => {
 }
   return (
 <SafeAreaView style={styles.container}>
+
  <View style={styles.userInfoSection}>
         <View style={{flexDirection: 'row', marginTop: 15}}>
          
@@ -133,7 +139,7 @@ const deleteAcc = () => {
           </View>
         </TouchableRipple>
         
-        <TouchableRipple onPress={() => {}}>
+        <TouchableRipple onPress={handlePosts}>
           <View style={styles.menuItem}>
             <Icon name="history" color="#FF6347" size={25}/>
             <Text style={styles.menuItemText}>Your Posts</Text>
@@ -167,6 +173,7 @@ const styles = StyleSheet.create({
   userInfoSection: {
     paddingHorizontal: 30,
     marginBottom: 25,
+    
   },
   title: {
     fontSize: 30,
@@ -178,17 +185,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
  
-  infoBox: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   menuWrapper: {
     marginTop: 10,
     borderBottomColor: '#dddddd',
-    borderBottomWidth: 1,
+    borderBottomWidth: 5,
     borderTopColor: '#dddddd',
-    borderTopWidth: 1,
+    borderTopWidth: 5,
   },
   menuItem: {
     flexDirection: 'row',
@@ -203,4 +206,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 26,
   },
+  
 });

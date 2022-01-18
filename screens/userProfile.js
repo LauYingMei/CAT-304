@@ -29,6 +29,7 @@ const userProfile = () => {
     const handleResetPw = () => {
       navigation.navigate("changePw")
       }
+
  useEffect(() =>{    
    setAll();
  // control physical back button
@@ -85,7 +86,8 @@ const deleteAcc = () => {
       {
           text: "Yes",
           onPress: () => (
-              deleteAccount(userID)
+              deleteAccount(userID),
+              navigation.navigate("Login")
           )
       },
       { text: "No" },
@@ -198,9 +200,9 @@ const styles = StyleSheet.create({
   menuWrapper: {
     marginTop: 10,
     borderBottomColor: '#dddddd',
-    borderBottomWidth: 1,
+    borderBottomWidth: 5,
     borderTopColor: '#dddddd',
-    borderTopWidth: 1,
+    borderTopWidth: 5,
   },
   menuItem: {
     flexDirection: 'row',
