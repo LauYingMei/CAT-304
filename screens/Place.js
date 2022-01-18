@@ -6,7 +6,7 @@ import Iconss from 'react-native-vector-icons/Ionicons';
 import * as MalaysiaPostcodes from 'malaysia-postcodes';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker'
-import { addNewPlace, updatePlace } from '../actions/placeAction'
+import { addNewPlace, updatePlace, deletePlace } from '../actions/placeAction'
 import { auth, db, storage } from '../firebase'
 import { v4 as uuid4 } from 'uuid'
 import * as firebase from 'firebase';
@@ -31,6 +31,7 @@ import {
     Platform,
     StatusBar,
     ActionSheetIOS,
+    Linking
 } from 'react-native'
 
 const windowWidth = Dimensions.get('window').width;
@@ -87,15 +88,27 @@ const Place = () => {
         try {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status == "granted") {
-                setLocationPermission(true)
-
                 // get user's coordinate (latitude and longitude)
+                setLocationPermission(true)
                 const coordinate = await Location.getCurrentPositionAsync({})
+                
                 setLatitude(JSON.stringify(coordinate.coords.latitude))
                 setLongitude(JSON.stringify(coordinate.coords.longitude))
+                console.log('(', latitude, ',', longitude,')')
             }
             else {
-                Alert.alert("Location Permission denied", "Please allow this app to get location to continue place creation! ")
+                Alert.alert("Location Permission denied", "To continue, please provide the required permission from settings.", [
+                    {
+                        text: "Settings",
+                        onPress: async () => (
+                            Platform.OS=='ios'?Linking.openURL('app-settings:'):Linking.openSettings()
+                        
+                        )
+                    },
+                    {
+                        text: "cancel",
+                    },
+                ]);
                 return
             }
 
@@ -116,7 +129,6 @@ const Place = () => {
                 text: "no",
             },
         ]);
-        
     }
 
 
@@ -128,7 +140,7 @@ const Place = () => {
                 if (doc.exists) {
                     if ((doc.data().userID != userID)) {
                         Alert.alert("You have not the permission to edit it!")
-                        navigation.replace("Main")
+                        navigation.replace("HomeScreen")
                     }
 
                     setSpotName(doc.data().spotName)
@@ -171,7 +183,7 @@ const Place = () => {
 
         }
         else if (!locationPermised) {
-            Alert.alert("Mandatory", "Please share your location to get the accurate coordinate of your spot.")
+            Alert.alert("Reminder", "Please share your location to get the accurate coordinate of your spot.")
         }
         else if (!latitude.trim() || !longitude.trim()) {
             Alert.alert('You cannot empty the latitude and longitude fields!')
@@ -205,6 +217,20 @@ const Place = () => {
             navigation.replace("PlaceDisplay",
                 { placeID: placeID })
         }
+    }
+
+    // to permanent delete all the information of a place
+    const deleteAction = () => {
+        Alert.alert("Permanent Delete", "Are You Sure?", [
+            {
+                text: "Yes",
+                onPress:() => (
+                   deletePlace(placeID),
+                   navigation.replace("HomeScreen")
+                )
+            },
+            { text: "no" },
+        ]);
     }
 
 
@@ -318,7 +344,7 @@ const Place = () => {
     }
 
     // toggleSwitch for entrance fee
-    const toggleSwitch = () => setCharged(previousState => !previousState);
+    const toggleSwitch = () => {setCharged(previousState => !previousState), setEntranceFee('')};
 
     // Event to to pick an image from image library (image gallery)
     const handleChoosePhoto = async () => {
@@ -440,8 +466,15 @@ const Place = () => {
                 <View style={styles.header}>
                     <TouchableOpacity onPress={goBack}><Icon name="chevron-left" size={20} color='#38761D' /></TouchableOpacity>
                     <Text style={styles.title}>
-                        My Agrotourism Spot
+                        My Agro Spot
                     </Text>
+
+                    {placeID!="" && <TouchableOpacity
+                        style={styles.buttonSubmit}
+                        onPress={deleteAction}
+                    >
+                        <Text style={styles.buttonText}>Delete</Text>
+                    </TouchableOpacity>}
 
                     <TouchableOpacity
                         style={styles.buttonSubmit}
@@ -788,7 +821,8 @@ const styles = StyleSheet.create({
     title: {
         fontWeight: "bold",
         marginVertical: 4,
-        fontSize: 20
+        fontSize: 20,
+        width: "50%"
     },
 
     subtitle: {
@@ -933,6 +967,7 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: '700',
         fontSize: 12,
+        textAlign:'center'
     },
 
     buttonTime: {

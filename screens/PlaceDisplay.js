@@ -6,9 +6,7 @@ import { auth, db } from '../firebase'
 import Icons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { BackHandler, LogBox } from 'react-native';
 import _ from 'lodash';
-
 LogBox.ignoreLogs(['Warning:...']); // ignore specific logs
 LogBox.ignoreAllLogs(); // ignore all logs
 const _console = _.clone(console);
@@ -42,7 +40,9 @@ import {
     KeyboardAvoidingView,
     TextInput,
     ScrollView,
-    Platform
+    Platform,
+    BackHandler, 
+    LogBox
 } from 'react-native'
 
 const windowWidth = Dimensions.get('window').width;
@@ -171,7 +171,6 @@ const PlaceDisplay = () => {
                     console.log("Get place information successfully")
                 }
                 else {
-                    Alert.alert("This page is not found.")
                     console.log("No such document!");
                 }
             }), ((error) => {

@@ -73,6 +73,20 @@ export async function updatePlace(place, placeID) {
         })
 }
 
+// delete place
+export async function deletePlace(placeID) {
+    var doc = await db.collection("Place").doc(placeID)
+    .delete()
+        .then(() => {
+            console.log('Place', placeID,  ' is deleted by: ', auth.currentUser?.uid)
+            Alert.alert("Place removed!");
+
+        }).catch(error => {
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log("Remove place", placeID, "unsuccesslly")
+        })
+}
+
 export async function updateImage(image, placeID) {
 
     var currentPlace = db.collection("Place").doc(placeID);
