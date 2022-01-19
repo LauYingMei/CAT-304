@@ -17,6 +17,9 @@ import resetForm from './screens/resetForm';
 import userProfile from './screens/userProfile';
 import userBookmark from './screens/userBookmark';
 import placeList from './screens/placeList';
+import {PlacesConfirmation} from './screens/PlacesConfirmation';
+import {OriginSelection} from "./screens/OriginSelection";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -38,6 +41,8 @@ export default function App() {
         <Stack.Screen name="Filter" component={Filter} />
         <Stack.Screen name="Place" component={Place} />
         <Stack.Screen name="PlaceDisplay" component={PlaceDisplay}  />
+        <Stack.Screen name="PlacesConfirmation" component={PlacesConfirmation} />
+        <Stack.Screen name="OriginSelection" component={OriginSelection} />
         </Stack.Group>
 
         <Stack.Screen name="Main" component={Main} />

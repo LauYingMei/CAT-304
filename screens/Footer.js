@@ -76,7 +76,7 @@ const Footer = ()  => {
                 name='clipboard-list' 
                 size={30} 
                 color='#20b2aa'
-                //onPress={() => {navigation.navigate('Place', {placeID: ""})}}
+                onPress={() => {navigation.navigate('PlacesConfirmation')}}
                 />
               </TouchableOpacity>
             }
