@@ -106,7 +106,6 @@ const OriginSelection = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    top:25,
     flex:1,
     backgroundColor: 'rgb(200, 247, 197)',
   },

@@ -108,7 +108,7 @@ const PlaceDisplay = () => {
 
         // control physical back button
         const backAction = () => {
-            navigation.replace("HomeScreen")
+            navigation.goBack()
             return true;
         };
 
@@ -570,7 +570,7 @@ const PlaceDisplay = () => {
                             </Card>
                         )}
                     />
-                    <TouchableOpacity onPress={() => navigation.replace("HomeScreen")} style={styles.goBackStyle}><Icons name="md-arrow-back-outline" size={35} color='#E1E2DA' /></TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackStyle}><Icons name="md-arrow-back-outline" size={35} color='#E1E2DA' /></TouchableOpacity>
                 </View>
 
                 <View style={styles.detailsContainer}>

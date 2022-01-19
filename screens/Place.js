@@ -31,7 +31,8 @@ import {
     Platform,
     StatusBar,
     ActionSheetIOS,
-    Linking
+    Linking,
+    BackHandler
 } from 'react-native'
 
 const windowWidth = Dimensions.get('window').width;
@@ -80,6 +81,18 @@ const Place = () => {
     useEffect(() => {
         if (placeID.trim())
             getPlace()
+
+        const backAction = () => {
+            goBack()
+            return true;
+        }
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
     }, [placeID])
 
 
@@ -213,7 +226,7 @@ const Place = () => {
                 
             else
                 await updatePlace(data, placeID)
-
+            navigation.pop(1)
             navigation.replace("PlaceDisplay",
                 { placeID: placeID })
         }

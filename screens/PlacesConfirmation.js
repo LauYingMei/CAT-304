@@ -62,15 +62,15 @@ const PlacesConfirmation  = ({ navigation }) => {
    const FetchBookmark= async () => {
     await db.collection("users").doc(userID).collection("bookmarks")
      .get().then((querySnapshot) => {
-      const bookmark = [];
+      const bookmarkList = [];
 
       querySnapshot.forEach((doc) => {
-        bookmark.push({
+        bookmarkList.push({
           ...doc.data(),
           id: doc.id,
         });
       });
-      setBookmark(bookmark);
+      setBookmark(bookmarkList);
     })
       .catch((error) => {
         console.log("Error getting events: ", error);
@@ -83,16 +83,16 @@ const PlacesConfirmation  = ({ navigation }) => {
     FetchBookmark()
 
     const backAction = () => {
-        navigation.replace("HomeScreen")
-        return true;
-        };
+      navigation.replace("HomeScreen")
+      return true;
+      };
 
-        const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction);
+      const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction);
 
-        return () => backHandler.remove();
-  }, [getBookmark])
+      return () => backHandler.remove();
+  }, [bookmark.length && getBookmark])
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -131,7 +131,7 @@ const PlacesConfirmation  = ({ navigation }) => {
     showMode2('date');
   };
 
-  const places = [
+  /*const places = [
     {
       placeId: 1,
       name: "home",
@@ -213,7 +213,7 @@ const PlacesConfirmation  = ({ navigation }) => {
         longitude: 101.7946
       }
     }
-  ]
+  ]*/
 
   const selectPlaces = (placePressed) => {
     // to allow deselect
@@ -281,9 +281,9 @@ const PlacesConfirmation  = ({ navigation }) => {
     
     {/*header */}
     <View style ={styles.headerBar}>
-      <TouchableOpacity onPress={()=>navigation.goBack()}>
+      <TouchableOpacity  style={{top: 0.1*HEIGHT}} onPress={()=>navigation.goBack()}>
         {/* return icon*/}
-        <Icons name="arrowleft" size={WIDTH*0.08} color='rgb(0,0,0)' style={{top: 0.05*HEIGHT}}/>
+        <Icons name="arrowleft" size={WIDTH*0.08} color='rgb(0,0,0)' />
       </TouchableOpacity>
       <Text style={{fontWeight:'bold',fontSize:WIDTH*0.035, padding:WIDTH*0.03}}>Trip Name</Text>      
       <KeyboardAvoidingView>
@@ -395,7 +395,6 @@ const PlacesConfirmation  = ({ navigation }) => {
     
 const styles = StyleSheet.create({
   container: {
-    top:25,
     flex:1,
     backgroundColor: 'rgb(200, 247, 197)',
   },
