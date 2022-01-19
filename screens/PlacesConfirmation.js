@@ -281,7 +281,7 @@ const PlacesConfirmation  = ({ navigation }) => {
     
     {/*header */}
     <View style ={styles.headerBar}>
-      <TouchableOpacity  style={{top: 0.1*HEIGHT}} onPress={()=>navigation.goBack()}>
+      <TouchableOpacity style={{top: 0.05*HEIGHT}} onPress={()=>navigation.goBack()}>
         {/* return icon*/}
         <Icons name="arrowleft" size={WIDTH*0.08} color='rgb(0,0,0)' />
       </TouchableOpacity>
