@@ -24,7 +24,8 @@ import {
   Text,
   route, 
   ImageBackground,
-  SafeAreaView
+  SafeAreaView,
+  ActivityIndicator
 } from "react-native";
 import { useCallback, useRef, 
   useState,
@@ -467,7 +468,7 @@ const BestRoute  = ({ route,navigation }) => {
     <SafeAreaView style={styles.container}>
         {/*data?null:getFastestPath()*/}
         {/*data[0]?setAPIran(true):null*/}
-        {APIran?renderRoute():null}
+        {APIran?renderRoute():<ActivityIndicator size={WIDTH/5} color="#0000ff" style={{alignItems:'center',justifyContent: "center", top: HEIGHT/3}}/>}
     </SafeAreaView>
   );// end of return 
 

@@ -19,7 +19,8 @@ import {
     ImageBackground ,
     KeyboardAvoidingView,
     TextInput,
-    BackHandler
+    BackHandler,
+    ActivityIndicator
 } from "react-native";
 import BookmarkedPlace from "../screens/BookmarkedPlace";
 moment.locale("en");
@@ -29,11 +30,12 @@ const WIDTH = Dimensions.get("screen").width;
 
 const PlacesConfirmation  = ({ navigation }) => {
 
+  const [selectedPlaces, setSelectedPlaces] = useState([])
+  const [place, setPlace] = React.useState([])
   const getBookmark = true
   const [bookmark, setBookmark] = useState([]);
   const userID = auth.currentUser?.uid;
-  const [selectedPlaces, setSelectedPlaces] = useState([])
-  const [place, setPlace] = React.useState([])
+
 
   //Fetch places data
   const FetchBookmarkedPlaces= async () => {
@@ -171,7 +173,9 @@ const PlacesConfirmation  = ({ navigation }) => {
     )          
               
     return (
-      <FlatList
+      !place[0]
+      ?<ActivityIndicator size={WIDTH/5} color="#0000ff" style={{alignItems:'center',justifyContent: "center", top: HEIGHT/3}}/>
+      :<FlatList
             key={'_'}
             data={place}
             keyExtractor={item => "_" + `${item.id}`}
@@ -183,7 +187,7 @@ const PlacesConfirmation  = ({ navigation }) => {
             }}
             numColumns={2}
             columnWrapperStyle={{
-              justifyContent: 'space-evenly',
+              justifyContent: 'space-evenly'
             }}
       />
     )
@@ -263,10 +267,10 @@ const PlacesConfirmation  = ({ navigation }) => {
     </View>
       
     <Text style={{fontSize:HEIGHT/35,fontWeight:'bold', left:WIDTH/15, top:HEIGHT/80}}>Bookmark list</Text>
-     
+    
     {/*Places*/}
     <View>
-    {bookmark.length<0
+    {bookmark.length === 0
       ?   <View style={{flexDirection:'column', justifyContent:"center",alignItems:"center", top:HEIGHT*0.07, opacity:0.5}}>
             <Icons name="exclamationcircle" size={WIDTH*0.5} color='#38761D' style={{}}/>
             <Text> </Text>
