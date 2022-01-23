@@ -35,7 +35,7 @@ const PlacesConfirmation  = ({ navigation }) => {
   const [selectedPlaces, setSelectedPlaces] = useState([])
   const [place, setPlace] = React.useState([])
 
-  //Fetch data for bookmark
+  //Fetch places data
   const FetchBookmarkedPlaces= async () => {
     const bookmarkNames = []
     for(let i=0; i<bookmark.length;i++){
@@ -56,10 +56,10 @@ const PlacesConfirmation  = ({ navigation }) => {
       .catch((error) => {
         console.log("Error getting events: ", error);
       });
-    };
+  };
 
-   //Fetch places data
-   const FetchBookmark= async () => {
+   //Fetch bookmark
+  const FetchBookmark= async () => {
     await db.collection("users").doc(userID).collection("bookmarks")
      .get().then((querySnapshot) => {
       const bookmarkList = [];
@@ -85,14 +85,14 @@ const PlacesConfirmation  = ({ navigation }) => {
     const backAction = () => {
       navigation.replace("HomeScreen")
       return true;
-      };
+    };
 
-      const backHandler = BackHandler.addEventListener(
+    const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
       backAction);
 
-      return () => backHandler.remove();
-  }, [bookmark.length && getBookmark])
+    return () => backHandler.remove();
+    }, [bookmark.length && getBookmark])
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -130,90 +130,6 @@ const PlacesConfirmation  = ({ navigation }) => {
   const showDatepicker2 = () => {
     showMode2('date');
   };
-
-  /*const places = [
-    {
-      placeId: 1,
-      name: "home",
-      photo: require('../assets/places/home.jpg'),
-      location:{
-        latitude: 2.0575,
-        longitude: 102.5852
-      }
-    },
-    {
-      placeId: 2,
-      name: "pahlawan",
-      photo: require('../assets/places/pahlawan.jpg'),
-      location:{
-        latitude: 2.1898,
-        longitude: 102.2526
-      }
-    },
-    {
-      placeId: 3,
-      name: "CS USM",
-      photo: require('../assets/places/usmcs.jpg'),
-      location:{
-        latitude: 5.3547,
-        longitude: 100.3015
-      }
-    },
-    {
-      placeId: 4,
-      name: "Genting FirstWorld",
-      photo: require('../assets/places/genting.jpg'),
-      location:{
-        latitude: 3.4256,
-        longitude: 101.7946
-      }
-    },
-    {
-      placeId: 5,
-      name: "Genting FirstWorld1",
-      photo: require('../assets/places/genting.jpg'),
-      location:{
-        latitude: 3.5256,
-        longitude: 101.7946
-      }
-    },
-    {
-      placeId: 6,
-      name: "Genting FirstWorld2",
-      photo: require('../assets/places/genting.jpg'),
-      location:{
-        latitude: 3.6256,
-        longitude: 101.7946
-      }
-    },
-    {
-      placeId: 7,
-      name: "Genting FirstWorld3",
-      photo: require('../assets/places/genting.jpg'),
-      location:{
-        latitude: 3.7256,
-        longitude: 101.7946
-      }
-    },
-    {
-      placeId: 8,
-      name: "Genting FirstWorld4",
-      photo: require('../assets/places/genting.jpg'),
-      location:{
-        latitude: 3.8256,
-        longitude: 101.7946
-      }
-    },
-    {
-      placeId: 9,
-      name: "Genting FirstWorld5",
-      photo: require('../assets/places/genting.jpg'),
-      location:{
-        latitude: 3.9256,
-        longitude: 101.7946
-      }
-    }
-  ]*/
 
   const selectPlaces = (placePressed) => {
     // to allow deselect
@@ -395,6 +311,7 @@ const PlacesConfirmation  = ({ navigation }) => {
     
 const styles = StyleSheet.create({
   container: {
+    top:25,
     flex:1,
     backgroundColor: 'rgb(200, 247, 197)',
   },
