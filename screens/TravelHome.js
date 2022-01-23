@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { FontAwesome5 } from '@expo/vector-icons/';
-import { Alert, FlatList, ImageBackground,Image, SafeAreaView, ScrollView, KeyboardAvoidingView, StyleSheet, Text, View, TouchableOpacity, Dimensions,BackHandler } from 'react-native';
 import { db,auth } from '../firebase'
 import moment from 'moment'
 import Icons from 'react-native-vector-icons/AntDesign';
 import { format } from "date-fns";
+import {
+  FlatList, 
+  ImageBackground,
+  SafeAreaView, 
+
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  Dimensions
+} from 'react-native';
+
 const HEIGHT = Dimensions.get("screen").height;
 const WIDTH = Dimensions.get("screen").width;
 
@@ -19,7 +29,7 @@ const TravelHome  = ({ navigation }) => {
 
   function renderTripList(list) {
     const renderItem = ({ item }) => (
-        <View style={{width: WIDTH*0.8,height:HEIGHT/4,margin:5, top:30}}>
+      <View style={{width: WIDTH*0.8,height:HEIGHT/4,margin:5, top:30}}>
         <TouchableOpacity
           onPress={() => navigation.navigate("ItineraryDisplay", {item})}
         >
@@ -79,6 +89,7 @@ const TravelHome  = ({ navigation }) => {
 
   //Fetch data for events
   const fetchTripList = async () => {
+    console.log('called')
     const today = new Date()
     
     await db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").orderBy("tripStartDate", "desc").get().then((querySnapshot) => {

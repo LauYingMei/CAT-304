@@ -49,9 +49,9 @@ const ItineraryDisplay = ({ route,navigation }) => {
     const [placeDataList, setPlaceDataList] = useState([])
     const [visible, setVisible] = useState(false);
 
-    useEffect(() => { 
+    useEffect(() => {
       FetchPlace()
-    }, [placeList.length || userID])
+    }, [placeList.length,placeDataList.length])
 
      //Fetch places
   const FetchPlace= async () => {
@@ -281,7 +281,9 @@ const ItineraryDisplay = ({ route,navigation }) => {
   
   return (
     <SafeAreaView style={styles.container}>
-      {renderRoute()}
+      {!placeDataList[0]
+      ?<ActivityIndicator size={WIDTH/5} color="#0000ff" style={{alignItems:'center',justifyContent: "center", top: HEIGHT/3}}/>
+      :renderRoute()}
     </SafeAreaView>
   );// end of return 
 

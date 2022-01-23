@@ -24,7 +24,7 @@ import {
 } from "react-native";
 import BookmarkedPlace from "../screens/BookmarkedPlace";
 moment.locale("en");
-// travel@hotmail.com, pw-Travel*123!
+
 const HEIGHT = Dimensions.get("screen").height;
 const WIDTH = Dimensions.get("screen").width;
 

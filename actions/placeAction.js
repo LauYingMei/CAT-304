@@ -382,10 +382,11 @@ export async function addNewTripList(data,tripName,StartDate,EndDate) {
 
 // remove TripList
 export async function removeTripList(tripID) {
-    var doc = await db.collection("users").doc(auth.currentUser?.uid)
-    doc.collection("tripList").doc(tripID).delete()
+
+    var doc = await db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").doc(tripID)
+    doc.delete()
         .then(() => {
-            console.log('Trip is deleted by: ', auth.currentUser?.uid)
+            console.log('Trip',tripID, 'is deleted by: ', auth.currentUser?.uid)
             Alert.alert("Trip removed!");
 
         }).catch(error => {

@@ -211,7 +211,7 @@ const BestRoute  = ({ route,navigation }) => {
     item.tripPhoto = data[0].img
     item.tripStartDate = startDateString
     item.tripEndDate = endDateString
-    navigation.navigate("ItineraryDisplay",{item})
+    navigation.navigate("HomeScreen")
   }
 
   const renderItem = ({ item, drag, isActive }) => {
@@ -474,6 +474,7 @@ const BestRoute  = ({ route,navigation }) => {
                 <Text style={{fontSize:HEIGHT*0.023,fontWeight:'bold',color:'white',left:14}}>SAVE</Text>
               </View>
           </TouchableOpacity>
+
         </View>
 
       </View>
