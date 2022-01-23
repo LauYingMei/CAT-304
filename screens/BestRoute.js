@@ -19,7 +19,8 @@ import {
   Animated, 
   Dimensions,
   TouchableOpacity, 
-  Image, StyleSheet, 
+  Image, 
+  StyleSheet, 
   View, 
   Text,
   route, 
@@ -217,7 +218,7 @@ const BestRoute  = ({ route,navigation }) => {
   const renderItem = ({ item, drag, isActive }) => {
 
     return (
-      <ScaleDecorator style={{backgroundColor:"blue"}}>
+      <ScaleDecorator>
         <TouchableOpacity
           onLongPress={drag}
           onPress={() => navigation.navigate('PlaceDisplay', { placeID: item.id })}
@@ -410,7 +411,7 @@ const BestRoute  = ({ route,navigation }) => {
         <DraggableFlatList
           data={data}
           onDragEnd={({ data }) => setDraggedData(data)}
-          keyExtractor={(item) => "_" + `${item.key}`}
+          keyExtractor={(item) => "_" + item.key}
           renderItem={renderItem}
           contentContainerStyle={{
             paddingTop:0.12*HEIGHT,
@@ -461,13 +462,13 @@ const BestRoute  = ({ route,navigation }) => {
           </View>
         </ImageBackground>
         <View style={{flex:1,flexDirection: 'row', flexWrap: 'wrap',justifyContent: 'space-between',backgroundColor:'#F5F5F5', height:0.12*WIDTH}}>
-          <TouchableOpacity onPress={()=> console.log(bdm.getDistanceMatrix())/*console.log("reset")*/ /*setData(initialData)*/}>
+          {/*<TouchableOpacity onPress={()=> console.log(bdm.getDistanceMatrix())}>
               <View style={{ left:17, width: WIDTH*0.2, height: WIDTH*0.08, borderRadius:10,top:6,backgroundColor: "#E3242B",elevation:5}}>
                 <Text style={{fontSize:HEIGHT*0.023,fontWeight:'bold',color:'white',left:10}}>RESET</Text>
               </View>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
 
-          <Text style={{fontWeight:'bold', fontSize:HEIGHT*0.023, color:'#38761D', height:0.2*WIDTH,marginTop:6}}>Itinerary</Text>
+          <Text style={{fontWeight:'bold', fontSize:HEIGHT*0.023, color:'#38761D', height:0.2*WIDTH,marginTop:6}}>    Itinerary</Text>
           
           <TouchableOpacity onPress={addTripList}>
               <View style={{ right:10,width: WIDTH*0.2, height: WIDTH*0.08, borderRadius:10,top:6,backgroundColor: "green",elevation:5}}>

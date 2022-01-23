@@ -89,7 +89,6 @@ const TravelHome  = ({ navigation }) => {
 
   //Fetch data for events
   const fetchTripList = async () => {
-    console.log('called')
     const today = new Date()
     
     await db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").orderBy("tripStartDate", "desc").get().then((querySnapshot) => {
