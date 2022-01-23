@@ -31,6 +31,7 @@ import { useCallback, useRef,
   useState,
   useEffect 
 } from 'react';
+import {addNewTripList} from '../actions/placeAction'
 
 const HEIGHT = Dimensions.get("screen").height;
 const WIDTH = Dimensions.get("screen").width;
@@ -132,7 +133,6 @@ const BestRoute  = ({ route,navigation }) => {
   }
 
   const initialData = () => {
-    console.log('check passing to initial data')
     NUM_ITEMS = path.length
     let output = []
     class Object{
@@ -160,14 +160,12 @@ const BestRoute  = ({ route,navigation }) => {
       object.driving_time = durationMatrix[pathIndex[i]][pathIndex[i+1]]
       output[i] = object
     }
-    console.log("Done inital data ")
     return output
   };
 
   function getFastestPath (){
     bdm.getDistanceMatrix(options)
       .then(data => {
-        console.log(placeList.length)
         console.log('Linking to Bing at the back')
         //setPathIndex(bdm.computeFastestRoute())
         //console.log(pathIndex)
@@ -196,6 +194,25 @@ const BestRoute  = ({ route,navigation }) => {
         console.log('api fetch fault')
         console.log(error)})
     };
+
+  
+  // to add bookmark or remove bookmark
+  const addTripList = async () => {
+    await addNewTripList(data,tripName,startDateString,endDateString)
+    class Item{
+      tripName = ""
+      tripPhoto = ""
+      tripStartDate = ""
+      tripEndDate = ""
+    }
+
+    const item = new Item()
+    item.tripName = tripName
+    item.tripPhoto = data[0].img
+    item.tripStartDate = startDateString
+    item.tripEndDate = endDateString
+    navigation.navigate("ItineraryDisplay",{item})
+  }
 
   const renderItem = ({ item, drag, isActive }) => {
 
@@ -452,7 +469,7 @@ const BestRoute  = ({ route,navigation }) => {
 
           <Text style={{fontWeight:'bold', fontSize:HEIGHT*0.023, color:'#38761D', height:0.2*WIDTH,marginTop:6}}>Itinerary</Text>
           
-          <TouchableOpacity onPress={()=>{console.log('save trip haven done')}}>
+          <TouchableOpacity onPress={addTripList}>
               <View style={{ right:10,width: WIDTH*0.2, height: WIDTH*0.08, borderRadius:10,top:6,backgroundColor: "green",elevation:5}}>
                 <Text style={{fontSize:HEIGHT*0.023,fontWeight:'bold',color:'white',left:14}}>SAVE</Text>
               </View>

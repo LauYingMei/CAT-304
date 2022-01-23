@@ -346,3 +346,50 @@ export async function updateEvent(placeID, eventID, title, fromDate, toDate, fro
             console.log(error.message)
         })
 }
+
+// add new trip list
+export async function addNewTripList(data,tripName,StartDate,EndDate) {
+    
+    var doc2 = db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").doc()
+    await doc2.set
+    ({
+        tripName: tripName,
+        tripPhoto: data[0].img,
+        tripStartDate: StartDate,
+        tripEndDate: EndDate,
+        time: firebase.firestore.FieldValue.serverTimestamp(),
+    }).then(function () {
+        //console.log('Trip is added by: ', auth.currentUser?.uid)
+        Alert.alert("Trip saved!");
+    }).catch(error => {
+        Alert.alert("Something went wrong. Please try later! ");
+        console.log("Save trip unsuccessfully")
+    })
+
+    var doc3 = db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").doc(doc2.id).collection("TripPlace")
+    for(let i=data.length-1;i>=0;i--){
+        (data[i].driving_time?null:data[i].driving_time=0)
+        await doc3.doc().set
+        ({
+            placeNum: data[i].key.charAt((data[i].key).length - 1),
+            placeId: data[i].id,
+            placeName: data[i].label,
+            driveTime: data[i].driving_time,
+            time: firebase.firestore.FieldValue.serverTimestamp()
+        })
+    }
+}
+
+// remove TripList
+export async function removeTripList(tripID) {
+    var doc = await db.collection("users").doc(auth.currentUser?.uid)
+    doc.collection("tripList").doc(tripID).delete()
+        .then(() => {
+            console.log('Trip is deleted by: ', auth.currentUser?.uid)
+            Alert.alert("Trip removed!");
+
+        }).catch(error => {
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log("Remove trip unsuccesslly")
+        })
+}

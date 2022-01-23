@@ -56,7 +56,7 @@ const PlacesConfirmation  = ({ navigation }) => {
       setPlace(places);
     })
       .catch((error) => {
-        console.log("Error getting events: ", error);
+        console.log("Error getting places: ", error);
       });
   };
 
@@ -75,7 +75,7 @@ const PlacesConfirmation  = ({ navigation }) => {
       setBookmark(bookmarkList);
     })
       .catch((error) => {
-        console.log("Error getting events: ", error);
+        console.log("Error getting bookmarks: ", error);
       });
 
     bookmark.length>0?await FetchBookmarkedPlaces():null
