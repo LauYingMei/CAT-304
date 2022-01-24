@@ -98,6 +98,11 @@ const handleBookmark = () => {
       navigation.replace("userBookmark")
   
 }
+const handleTrip = () => {
+ 
+  navigation.replace("TravelHome")
+
+}
   return (
 <SafeAreaView style={styles.container}>
  <View style={styles.userInfoSection}>
@@ -147,7 +152,7 @@ const handleBookmark = () => {
             <Text style={styles.menuItemText}>Your Bookmarks</Text>
           </View>
         </TouchableRipple>
-        <TouchableRipple onPress={() => {}}>
+        <TouchableRipple onPress={handleTrip}>
           <View style={styles.menuItem}>
             <Icon name="sign-direction" color="#FF6347" size={25}/>
             <Text style={styles.menuItemText}>Your Trip Plans</Text>
