@@ -96,8 +96,9 @@ const TravelHome  = ({ navigation }) => {
       const postTripList = [];
 
       querySnapshot.forEach((doc) => {
-      let momentObj = moment(doc.data().tripStartDate, 'E, MMM d, yy')
-      let showDate = moment(momentObj).format()
+      
+      const showDate = new Date(doc.data().tripStartDate)
+
       showDate<today
       ?prevTripList.push({
           ...doc.data(),

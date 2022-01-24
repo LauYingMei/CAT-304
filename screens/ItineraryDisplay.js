@@ -115,7 +115,7 @@ const ItineraryDisplay = ({ route,navigation }) => {
     for (let i=0;i<placeList.length;i++){
         const object = new itineraryData()
         object.key = "Item-"+placeList[i].placeNum
-        object.id = placeList[i].id
+        object.id = placeDataList[i].id
         object.label = placeDataList[i].spotName
         object.img = placeDataList[i].image[0]
         object.fromDay = placeDataList[i].fromDayOfWeek
