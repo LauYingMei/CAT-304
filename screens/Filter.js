@@ -23,6 +23,7 @@ const Filter = ()  => {
     const [showFilterModal, setShowFilterModal] = useState(false)
     const [dataExist, setDataExist] = useState(false)
     const [filterCount, setFilterCount] = useState(0)
+    const navigation = useNavigation();
 
     //Fetch data after filter is applied
     const FetchData = () => {
@@ -261,6 +262,13 @@ const Filter = ()  => {
     return (
         <SafeAreaView style={{height: windowHeight, width: windowWidth, backgroundColor:'white'}}>
             <View style={{flexDirection: 'row', marginTop: "3%"}}>
+                <TouchableOpacity 
+                    onPress={() => navigation.goBack()} 
+                    style={{marginLeft: "1%"}}
+                    >
+                    <MaterialCommunityIcons name="arrow-left" size={30} color='black' />
+                </TouchableOpacity>
+
                 <Text style={styles.filterTitle}>Filter</Text>
                 
                 <TouchableOpacity
@@ -268,7 +276,7 @@ const Filter = ()  => {
                         {showFilterModal?setShowFilterModal(false): setShowFilterModal(true)}}
                 >
                     <MaterialCommunityIcons 
-                        style={{marginLeft: "81%"}}
+                        style={{marginLeft: "75%"}}
                         name='tune' 
                         size={30} 
                         color='lightgrey' 
