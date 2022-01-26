@@ -47,21 +47,35 @@ export async function addNewUser(email,ContactNo, role, userName) {
     }
 // delete user account
 export async function deleteAccount(userID) {
+    await db.collection("Place").where("userID", "==", userID)
+        .get()
+        .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+        doc.ref.delete();
+        console.log("All Places successfully deleted!")
+        });
+        
+           // Alert.alert("All Places Removed!");
+        })
+        .catch((error) => {
+          //  Alert.alert("Something went wrong. Please try later! ");
+            console.log("Error removing all places")
+        });
     await db.collection("users").doc(userID)
         .delete().then(() => {
             console.log("Doc successfully deleted!")
             
         }).catch((error) => {
-            console.log("Error removing doc: ", error(message))
+            console.log("Error removing doc")
         })
         const user = firebase.auth().currentUser;
 
         user.delete().then(() => {
             Alert.alert("Account is deleted!");
         }).catch((error) => {
-            console.log("Error removing account: ", error(message))
+            console.log("Error removing account")
         });
-
+        
 }
 
 export async function reauthenticate(currentPassword){
@@ -137,9 +151,9 @@ export async function clearBookmark(userID) {
             console.log("Error removing all bookmarks: ", error(message))
         });
     };
-/*
-// delete all places and events
 
+// delete all places and events
+/*
 export async function clearPlaces(userID) {
     await db.collection("places").where("userID", "==", userID)
         .get()
@@ -148,11 +162,10 @@ export async function clearPlaces(userID) {
         doc.ref.delete();
         });
         console.log("All Places successfully deleted!")
-            Alert.alert("All Places Removed!");
+           // Alert.alert("All Places Removed!");
         })
         .catch((error) => {
-            Alert.alert("Something went wrong. Please try later! ");
+          //  Alert.alert("Something went wrong. Please try later! ");
             console.log("Error removing all places: ", error(message))
         });
-    };
-*/
+    };*/

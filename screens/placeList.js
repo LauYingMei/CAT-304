@@ -63,7 +63,7 @@ const placeList = () => {
     <KeyboardAvoidingView>
     
     
-      <SafeAreaView backgroundColor='#a2e0dc' height='100%' width='100%'>
+      <SafeAreaView backgroundColor='#c8f7c5' height='100%' width='100%'>
       <StatusBar translucent backgroundColor="rgba(0,0,0,0.1)" />
       <View style={styles.header}>
         <TouchableOpacity onPress={goBack}>
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     marginTop:'3%',
     marginLeft:'3%',
     fontWeight: 'bold', 
-    fontSize: 28,
+    fontSize: 24,
     color:'white',
   },
   header: {
