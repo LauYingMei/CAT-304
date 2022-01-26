@@ -42,7 +42,6 @@ return () => backHandler.remove();
  }, [getData]
  )
  
-
   const setAll =async () => {
     var docRef = db.collection("users").doc(userID);
    console.log(auth.currentUser?.uid);
@@ -68,6 +67,7 @@ return () => backHandler.remove();
    });
    }
   const goBack = () => {
+   
    if(user.role=="owner"){
      setAll()
     navigation.navigate("Profile")
