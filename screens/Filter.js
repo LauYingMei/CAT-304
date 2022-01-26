@@ -233,36 +233,21 @@ const Filter = ()  => {
             <View style={styles.FilterModal}>
                 {/* Category Filter */}
                 <Text style={styles.title}>Category</Text>
-                <FlatList 
-                    vertical 
-                    keyExtractor={item => item.index}
-                    data = {category}
-                    renderItem = {({item}) => <FilterTextCategory category = {item} />}
-                    numColumns={(6)}
-                    columnWrapperStyle={{flex: 1}} 
-                    />  
+                <View style={{width: "97%", flexDirection: "row", flexWrap: "wrap"}}>
+                    {category.map((item, index) => (<FilterTextCategory key={index} category = {item}/>))}
+                </View>  
 
                 {/* Rating Filter */}
                 <Text style={styles.title}>Rating</Text>
-                <FlatList 
-                    vetical 
-                    keyExtractor={item => item.index}
-                    data = {rating}
-                    renderItem = {({item}) => <FilterTextRating rating = {item} />}
-                    numColumns={(6)}
-                    columnWrapperStyle={{flex: 1}} 
-                    />  
+                <View style={{width: "97%", flexDirection: "row", flexWrap: "wrap"}}>
+                    {rating.map((item, index) => (<FilterTextRating key={index} rating = {item}/>))}
+                </View> 
                 
                 {/* State Filter */}
                 <Text style={styles.title}>State</Text>
-                <FlatList 
-                    vetical 
-                    keyExtractor={item => item.index}
-                    data = {state}
-                    renderItem = {({item}) => <FilterTextState state = {item} />}
-                    numColumns={(3)}
-                    columnWrapperStyle={{flex: 1}} 
-                    />  
+                <View style={{width: "97%", flexDirection: "row", flexWrap: "wrap"}}>
+                    {state.map((item, index) => (<FilterTextState key={index} state = {item}/>))}
+                </View> 
 
                 {/*Apply Filter Button */}
                 <TouchableOpacity 
@@ -300,9 +285,6 @@ const Filter = ()  => {
             </View>
 
             {showFilterModal===true && FilterModal()}
-
-            {/*Fetch all data for initial state */}
-            {/* {useEffect(() => {FetchData()},[])} */}
             
             {/* Display relavent content */}
             <View style = {styles.filterCount}>
