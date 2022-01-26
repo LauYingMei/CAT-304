@@ -14,14 +14,12 @@ const styles = StyleSheet.create({
     header: {
       flexDirection:'row',
       justifyContent: 'center',
-      backgroundColor: 'white',
+      backgroundColor: '#10533f',
       height: '13%',
       alignItems: 'center',
-      borderBottomLeftRadius: 30,
-      borderBottomRightRadius: 30,
     },
     header_text:{
-      color: "#20b2aa",
+      color: "#9cd548",
       fontSize: 30,
       fontWeight: 'bold',
     },
