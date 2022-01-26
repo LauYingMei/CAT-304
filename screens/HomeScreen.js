@@ -171,6 +171,15 @@ const HomeScreen = () => {
           numColumns={(2)}
           columnWrapperStyle={{ flex: 1 }}
         />
+
+        {/* Display View Button */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Filter')}
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>View more place</Text>
+        </TouchableOpacity>
+
       </ScrollView>
 
       {Footer()}
@@ -247,7 +256,21 @@ const styles = StyleSheet.create({
     color: "rgba(135, 135, 135, 1)",
     fontWeight: 'bold',
   },
-
+  button: {
+    backgroundColor: '#38761D',
+    width: '95%',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: "3%",
+    marginBottom: "3%",
+   
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+  },
 });
 
 export default HomeScreen;

@@ -1,5 +1,5 @@
 import React, {useState, useEffect}  from 'react'
-import { Dimensions, Image,StyleSheet, View, Text, TouchableOpacity, FlatList} from 'react-native';
+import { Dimensions, Image,StyleSheet, View, Text, TouchableOpacity, FlatList, BackHandler} from 'react-native';
 import { useNavigation } from '@react-navigation/native'
 import { MaterialCommunityIcons} from '@expo/vector-icons/';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +22,23 @@ const Filter = ()  => {
     const [dataExist, setDataExist] = useState(false)
     const [filterCount, setFilterCount] = useState(0)
     const navigation = useNavigation();
+
+    useEffect(() => {
+        FetchData()
+
+        // control physical back button
+        const backAction = () => {
+            navigation.navigate("HomeScreen")
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [])
 
     //Fetch data after filter is applied
     const FetchData = () => {
@@ -285,7 +302,7 @@ const Filter = ()  => {
             {showFilterModal===true && FilterModal()}
 
             {/*Fetch all data for initial state */}
-            {useEffect(() => {FetchData()},[])}
+            {/* {useEffect(() => {FetchData()},[])} */}
             
             {/* Display relavent content */}
             <View style = {styles.filterCount}>
