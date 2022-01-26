@@ -297,9 +297,8 @@ const Filter = ()  => {
 
             {/* Display relavent content */}
             {dataExist == false && filterCount != 0?
-            <View marginTop="50%" alignItems="center">
+            <View marginTop="30%" alignItems="center">
                  <Image source={require('./../assets/image/SearchFail.png')} style={styles.image}/>
-                <Text >No item matching your search ! </Text>
             </View>:
             <View style={{marginBottom: '25%', marginTop: '3%'}}>
                 <FlatList 
@@ -409,8 +408,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
       },
       image: {
-          height: "50%",
-          width: "40%",
+          height: "70%",
+          width: "60%",
           resizeMode: 'stretch'
       }
 });
