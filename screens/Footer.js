@@ -60,7 +60,7 @@ const Footer = ()  => {
             </TouchableOpacity>
 
             {/* Second Icon: If owner, Create Place Form. Else, trip-planning form */}
-            {getRole()}
+            {useEffect(() => {getRole()},[])}
             {owner?  
               <TouchableOpacity>
                 <MaterialIcons style={styles.icons} 
@@ -102,12 +102,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection:'row',
     justifyContent: 'space-evenly',
-    backgroundColor: 'white',
+    backgroundColor: '#10533f',
   },
   icons:{
     marginBottom: '20%',
     marginTop: '20%',
-    color: '#20b2aa',
+    color: 'white',
   },
 });
   

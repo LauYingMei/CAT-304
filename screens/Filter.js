@@ -4,8 +4,6 @@ import { useNavigation } from '@react-navigation/native'
 import { MaterialCommunityIcons} from '@expo/vector-icons/';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '../firebase';
-import Header from '../screens/Header';
-import Footer from '../screens/Footer';
 import Rating from '../screens/Rating';
 
 const windowWidth = Dimensions.get('window').width;
@@ -260,7 +258,7 @@ const Filter = ()  => {
     
 
     return (
-        <SafeAreaView style={{height: windowHeight, width: windowWidth, backgroundColor:'white'}}>
+        <SafeAreaView style={{height: windowHeight, width: windowWidth, backgroundColor:'rgb(200,247,197)'}}>
             <View style={{flexDirection: 'row', marginTop: "3%"}}>
                 <TouchableOpacity 
                     onPress={() => navigation.goBack()} 
@@ -279,7 +277,7 @@ const Filter = ()  => {
                         style={{marginLeft: "75%"}}
                         name='tune' 
                         size={30} 
-                        color='lightgrey' 
+                        color='#38761D' 
                     />
                 </TouchableOpacity>
             </View>
@@ -299,9 +297,8 @@ const Filter = ()  => {
 
             {/* Display relavent content */}
             {dataExist == false && filterCount != 0?
-            <View marginTop="50%" alignItems="center">
+            <View marginTop="30%" alignItems="center">
                  <Image source={require('./../assets/image/SearchFail.png')} style={styles.image}/>
-                <Text >No item matching your search ! </Text>
             </View>:
             <View style={{marginBottom: '25%', marginTop: '3%'}}>
                 <FlatList 
@@ -359,7 +356,7 @@ const styles = StyleSheet.create({
         padding: 5,
         alignItems: 'center',
         borderRadius: 15,
-        backgroundColor: '#f0f8ff',
+        backgroundColor: 'white',
         width: windowWidth*0.45,
         elevation: 10,
       },
@@ -396,7 +393,7 @@ const styles = StyleSheet.create({
         marginTop: '3%',
         width: "93%",
         marginLeft: "3%",
-        backgroundColor: 'rgba(211,229,207, 0.5)',
+        backgroundColor: '#f5f5f5',
         borderRadius: 20,
         paddingLeft: 10,
         paddingTop: 5,
@@ -411,8 +408,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
       },
       image: {
-          height: "50%",
-          width: "40%",
+          height: "70%",
+          width: "60%",
           resizeMode: 'stretch'
       }
 });
