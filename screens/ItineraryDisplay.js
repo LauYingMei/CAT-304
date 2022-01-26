@@ -1,35 +1,23 @@
 import React from "react";
 import moment from "moment";
 moment.locale("en");
-import { format } from "date-fns";
-import { useNavigation } from '@react-navigation/native'
-import { StatusBar } from 'expo-status-bar';
-import { ScrollView } from 'react-native-gesture-handler';
 import Icons from 'react-native-vector-icons/AntDesign';
 import Icons2 from 'react-native-vector-icons/Ionicons';
 import Icons3 from 'react-native-vector-icons/Octicons';
-import Icons4 from 'react-native-vector-icons/Feather';
 import {Overlay} from 'react-native-elements';
-import DraggableFlatList, {ScaleDecorator,} from "react-native-draggable-flatlist";
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { db,auth } from '../firebase'
-import {
-  KeyboardAvoidingView,
-  TextInput, 
-  Modal,
-  Animated, 
+import { 
   FlatList,
   Dimensions,
   TouchableOpacity, 
   Image, StyleSheet, 
   View, 
   Text,
-  route, 
   ImageBackground,
   SafeAreaView,
   ActivityIndicator
 } from "react-native";
-import { useCallback, useRef, 
+import { 
   useState,
   useEffect 
 } from 'react';
@@ -140,9 +128,9 @@ const ItineraryDisplay = ({ route,navigation }) => {
           <View style={{ flexDirection:'column'}}>   
               {/* the place row*/}
               <View style={[styles.placeInfo,{ flexDirection: 'row', flex:1}]}>
-                <Image source = {item.img} style= {{width: 0.2*WIDTH, height:0.2*WIDTH, borderRadius:10,left:10,top:10}}/>
+                <Image source = {item.img} style= {{width: HEIGHT/10.5, height:HEIGHT/10.5, borderRadius:10,left:10,top:10}}/>
                 {/* the details*/}
-                <View style={{ flexDirection: 'column',top:10, left:20, height:0.2*WIDTH, width: WIDTH/1.8}}>
+                <View style={{ flexDirection: 'column',top:10, left:15, height:0.2*WIDTH, width: WIDTH/1.8}}>
                   {/* Place name*/}
                   <View style={{ flexDirection: 'row'}}>
                     <Icons2 name="location-sharp" size={WIDTH*0.05} color='red' style={{top:5}}/>
@@ -154,13 +142,13 @@ const ItineraryDisplay = ({ route,navigation }) => {
                     <View style={{ flexDirection: 'column'}}>
                       {/* Operating Day */}
                       <View style={{ flexDirection: 'row'}}>
-                        <Text style ={{fontWeight:'bold'}}> Operating Day   : </Text>
+                        <Text style ={{fontWeight:'bold'}}> Operating Day  : </Text>
                         <Text>{item.fromDay == item.toDay?" Daily":item.fromDay+" - "+item.toDay}</Text>
                       </View>
 
                      {/* Operating Time */}
                       <View style={{ flexDirection: 'row'}}>
-                        <Text style ={{fontWeight:'bold'}}> Operating Time : </Text>
+                        <Text style ={{fontWeight:'bold'}}> Operating Time: </Text>
                         <Text>{item.fromTime} - {item.toTime}</Text>
                       </View>
                     </View>
@@ -220,7 +208,7 @@ const ItineraryDisplay = ({ route,navigation }) => {
           keyExtractor={(item) => "_" + `${item.id}`}
           renderItem={renderItem}
           contentContainerStyle={{
-            paddingTop:0.12*HEIGHT,
+            paddingTop:0.19*HEIGHT,
             paddingBottom: 0.1*HEIGHT,
             alignItems:'center',
             justifyContent:'center',
@@ -229,16 +217,16 @@ const ItineraryDisplay = ({ route,navigation }) => {
       
         {/*header*/}
         <View style={{position:'absolute', alignSelf:'flex-end'}}>
-          <ImageBackground source = {trip.tripPhoto} style= {{width: WIDTH, height:0.1*HEIGHT}}>
+          <ImageBackground source = {trip.tripPhoto} style= {{width: WIDTH, height:0.15*HEIGHT}}>
           <View style = {styles.overlay}>
             <View style={{flexDirection: 'row', flex:1}}>
               <View style={{flexDirection: 'row', flex:1}}>
                 {/* return icon*/}
                 <TouchableOpacity onPress={()=>navigation.goBack()}>
-                  <Icons name="arrowleft" size={WIDTH*0.08} color='white' style={{top:HEIGHT*0.025}}/>
+                  <Icons name="arrowleft" size={WIDTH*0.08} color='white' style={{top:HEIGHT*0.055}}/>
                 </TouchableOpacity>
                 {/* Trip Details*/}
-                <View style={{ flexDirection: 'column',top:10, left:20, height:0.2*WIDTH}}>
+                <View style={{ flexDirection: 'column',top:HEIGHT*0.045, left:20, height:0.2*WIDTH}}>
                   <View style={{ flexDirection: 'row'}}>
                     <Text style={{fontWeight:'bold', fontSize:HEIGHT*0.018, color:'white'}}>{trip.tripStartDate}</Text>
                     <Text style={{fontSize:HEIGHT*0.018}}>{"  "}</Text>
@@ -259,7 +247,7 @@ const ItineraryDisplay = ({ route,navigation }) => {
           <Text style={{left:20, fontWeight:'bold', fontSize:HEIGHT*0.023, color:'#38761D', height:0.2*WIDTH,marginTop:6}}>Itinerary</Text>
           <TouchableOpacity onPress={toggleOverlay} style={{right:20}}>
             {/* return icon*/}
-            <Icons name="delete" size={WIDTH*0.08} color='red' style={{top:3}}/>
+            <Icons name="delete" size={WIDTH*0.07} color='red' style={{top:5}}/>
           </TouchableOpacity>
           {/* Pop up screen for edit trip details*/}
           <Overlay isVisible={visible}>
@@ -292,14 +280,14 @@ const ItineraryDisplay = ({ route,navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    top:25,
+    //top:25,
     flex:1,
     backgroundColor: 'rgb(200, 247, 197)',
   },
   rowItem: {
     top:0.05*HEIGHT,
-    height: HEIGHT/5,
-    width: WIDTH*0.9,
+    height: HEIGHT/4.8,
+    width: WIDTH*0.95,
     margin:2,
     alignItems: "flex-start",
     justifyContent: "center",
@@ -333,7 +321,7 @@ const styles = StyleSheet.create({
   },
   overlay:{
     width: WIDTH,
-    height:0.1*HEIGHT,
+    height:0.15*HEIGHT,
     backgroundColor: 'rgba(0,0,0,0.4)',
     left:0
 },

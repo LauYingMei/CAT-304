@@ -4,19 +4,15 @@ import { format } from "date-fns";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icons from 'react-native-vector-icons/AntDesign';
 import { db,auth } from '../firebase'
-
 import {
     FlatList,
     TouchableOpacity, 
-    Image, 
     StyleSheet, 
     View, 
-    Button, 
     Platform,
     Text,
     SafeAreaView, 
     Dimensions, 
-    ImageBackground ,
     KeyboardAvoidingView,
     TextInput,
     BackHandler,
@@ -35,7 +31,6 @@ const PlacesConfirmation  = ({ navigation }) => {
   const getBookmark = true
   const [bookmark, setBookmark] = useState([]);
   const userID = auth.currentUser?.uid;
-
 
   //Fetch places data
   const FetchBookmarkedPlaces= async () => {
@@ -157,7 +152,6 @@ const PlacesConfirmation  = ({ navigation }) => {
   }
 
   const handleProceedNext = () => {
-    // CHECK TRIP NAME****
     navigation.navigate("OriginSelection",{chosenPlacesList:selectedPlaces, tripStart:startDate, tripEnd:endDate, tripname:tripName})
   }
 
@@ -198,12 +192,12 @@ const PlacesConfirmation  = ({ navigation }) => {
   return (
 
     <SafeAreaView style={styles.container}>
-    
+    <View style={{height:25,backgroundColor:'#E8E9EB'}}></View>
     {/*header */}
     <View style ={styles.headerBar}>
       <TouchableOpacity style={{top: 0.05*HEIGHT}} onPress={()=>navigation.goBack()}>
         {/* return icon*/}
-        <Icons name="arrowleft" size={WIDTH*0.08} color='rgb(0,0,0)' />
+        <Icons name="arrowleft" size={WIDTH*0.08} color='rgb(0,0,0)'  style={{height:HEIGHT*0.055}}/>
       </TouchableOpacity>
       <Text style={{fontWeight:'bold',fontSize:WIDTH*0.035, padding:WIDTH*0.03}}>Trip Name</Text>      
       <KeyboardAvoidingView>
@@ -212,7 +206,7 @@ const PlacesConfirmation  = ({ navigation }) => {
       </KeyboardAvoidingView>
       <View style={{padding:WIDTH*0.05}} />
         
-      <View style={{flexDirection: 'row', height:35,marginTop: 30, flexWrap: 'wrap'}}>
+      <View style={{flexDirection: 'row', height:35,marginTop: 20, flexWrap: 'wrap'}}>
         {/* the calendar icon*/}
         <Icons name="calendar" size={WIDTH*0.07} color='rgb(0,0,0)' />
         <Text style={{fontWeight: 'bold'}}> From </Text>
@@ -269,7 +263,7 @@ const PlacesConfirmation  = ({ navigation }) => {
     <Text style={{fontSize:HEIGHT/35,fontWeight:'bold', left:WIDTH/15, top:HEIGHT/80}}>Bookmark list</Text>
     
     {/*Places*/}
-    <View>
+    
     {bookmark.length === 0
       ?   <View style={{flexDirection:'column', justifyContent:"center",alignItems:"center", top:HEIGHT*0.07, opacity:0.5}}>
             <Icons name="exclamationcircle" size={WIDTH*0.5} color='#38761D' style={{}}/>
@@ -280,24 +274,19 @@ const PlacesConfirmation  = ({ navigation }) => {
       :bookmark.length === 1
       ? (<View>
             {alert("Too few place for itinerary planning. Please select more places to visit.")}
-            {renderPlaces()} 
         </View>)
       
-      :(  <View>
+      :( <View>
             <View style={{flexDirection:'row',justifyContent:'space-between',top: HEIGHT/80,marginTop:10,marginBottom:10}}>
               <Text style={{fontSize:HEIGHT*0.021, flexBasis:'75%',left:WIDTH/15,color:'#3A3B3C'}}>Select at least 2 places:</Text>
-              <Text onPress={()=>{handleSelection()}} style={{fontSize:HEIGHT*0.021,color:'blue',right:1}}>
+              <Text onPress={()=>{handleSelection()}} style={{fontSize:HEIGHT*0.021,color:'blue',right:6}}>
                 {isSelectAll? "Deselect all":"Select all"}
               </Text>
-            </View>
-
-            <View>
-              {renderPlaces()}
-            </View>
+            </View>       
           </View>
         )
       }
-    </View>
+    {bookmark.length>0?renderPlaces():null}
     {/*right circle icon*/} 
     {selectedPlaces.length>1
         ?<TouchableOpacity style={{position:'absolute',bottom:35,right:20, alignSelf:'flex-end'}}
@@ -315,7 +304,7 @@ const PlacesConfirmation  = ({ navigation }) => {
     
 const styles = StyleSheet.create({
   container: {
-    top:25,
+    //top:25,
     flex:1,
     backgroundColor: 'rgb(200, 247, 197)',
   },
@@ -324,10 +313,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     flexWrap: 'wrap',
     width: WIDTH, 
-    height:0.15*HEIGHT
+    height:0.155*HEIGHT
   },
   modal:{
-    height: HEIGHT/22,
+    height: 0.055*HEIGHT,
     width: WIDTH*0.35,
     borderRadius:8,
     borderWidth:3,

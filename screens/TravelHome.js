@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { db,auth } from '../firebase'
-import moment from 'moment'
 import Icons from 'react-native-vector-icons/AntDesign';
-import { format } from "date-fns";
 import {
   FlatList, 
   ImageBackground,
@@ -120,6 +118,7 @@ const TravelHome  = ({ navigation }) => {
   return (
 
     <SafeAreaView style={styles.container}>
+      <View style={{top:20}}> 
         <TouchableOpacity onPress={()=>navigation.goBack()}>
           {/* return icon*/}
           <Icons name="arrowleft" size={WIDTH*0.08} color='rgb(0,0,0)' />
@@ -136,10 +135,11 @@ const TravelHome  = ({ navigation }) => {
             ?<Text style={{ top:20, left:20, color: 'rgba(0,0,0,0.4)', fontSize: 20, marginLeft: '3%' }}>No Trip</Text>
             :renderTripList(prevtripList)
         }
+        </View>
         {/*plus icon*/} 
-        <TouchableOpacity style={{position:'absolute',bottom:60,right:30, alignSelf:'flex-end'}}
+        <TouchableOpacity style={{position:'absolute',bottom:HEIGHT*0.01,right:HEIGHT*0.01, alignSelf:'flex-end'}}
             onPress={()=>navigation.navigate("PlacesConfirmation")}>
-            <View>
+            <View>{/* */}
                 <Icons name="pluscircle" size={WIDTH*0.15} color='#38761D' />
             </View>
         </TouchableOpacity>
@@ -151,7 +151,7 @@ const TravelHome  = ({ navigation }) => {
 //Style
 const styles = StyleSheet.create({
     container: {
-        top:25,
+        //top:25,
         flex:1,
         backgroundColor: 'rgb(200, 247, 197)'
     },

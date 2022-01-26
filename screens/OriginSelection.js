@@ -85,7 +85,7 @@ const OriginSelection = ({ route, navigation }) => {
           <Icons name="arrowleft" size={WIDTH*0.08} color='rgb(0,0,0)' />
         </TouchableOpacity>
         <Text style={styles.header}>   Select 1 origin: </Text>
-        </View>
+      </View>
           {selectOrigin()}
 
           {/*right circle icon*/} 

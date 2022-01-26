@@ -2,9 +2,6 @@ import React from "react";
 import moment from "moment";
 moment.locale("en");
 import { format } from "date-fns";
-import { useNavigation } from '@react-navigation/native'
-import { StatusBar } from 'expo-status-bar';
-import { ScrollView } from 'react-native-gesture-handler';
 import Icons from 'react-native-vector-icons/AntDesign';
 import Icons2 from 'react-native-vector-icons/Ionicons';
 import Icons3 from 'react-native-vector-icons/Octicons';
@@ -15,20 +12,17 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   KeyboardAvoidingView,
   TextInput, 
-  Modal,
-  Animated, 
   Dimensions,
   TouchableOpacity, 
   Image, 
   StyleSheet, 
   View, 
-  Text,
-  route, 
+  Text, 
   ImageBackground,
   SafeAreaView,
   ActivityIndicator
 } from "react-native";
-import { useCallback, useRef, 
+import { 
   useState,
   useEffect 
 } from 'react';
@@ -81,54 +75,17 @@ const BestRoute  = ({ route,navigation }) => {
     distanceUnit: 'km'
   };
 
-    /*const durationMatrix = []
-    const path = []
-    const pathIndex = []*/
   let durationMatrix = []
   let path = []
   let pathIndex = []
-    //const[durationMatrix, setDurationMatrix] = useState()
-    //const[path, setPath] = useState()
-    //const[pathIndex, setPathIndex] = useState()
-    const[data, setData] = useState([]);
-    //let APIResultCache = []
-    /*= useMemo(() => {
-      return getFastestPath()
-    },[isAPIset])*/
-
-    /*useEffect(()=>{
-      console.log('Start Bing Distance Matrix API')
-      console.log(APIResultCache)
-      setAPIran(true)
-      },[APIResultCache])*/
+  const[data, setData] = useState([]);
 
     useEffect(()=>{
-      console.log('Start Bing Distance Matrix API')
       getFastestPath()
     },[])
-        
-      /*useEffect(()=>{
-        if(APIran){
-        console.log('Now rendering the content')
-        renderRoute()
-      }},[APIran])*/
 
   let NUM_ITEMS = 0
 
-  /*const setDraggedData = (modifiedData) =>{
-    let from = -1
-    let to = -1
-    for (let i=0;i<modifiedData.length;i++){
-      console.log(i)
-      from = parseInt(modifiedData[i].key.charAt((modifiedData[i].key).length - 1))
-      to = parseInt(modifiedData[i+1].key.charAt((modifiedData[i+1].key).length - 1))
-      console.log(from)
-      console.log(to)
-      console.log(durationMatrix)
-      modifiedData[i].driving_time = durationMatrix[from][to]
-    }
-    setData(modifiedData)
-  }*/
   const setDraggedData = (modifiedData) =>{
     setData(modifiedData)
   }
@@ -166,29 +123,14 @@ const BestRoute  = ({ route,navigation }) => {
 
   function getFastestPath (){
     bdm.getDistanceMatrix(options)
-      .then(data => {
-        console.log('Linking to Bing at the back')
-        //setPathIndex(bdm.computeFastestRoute())
-        //console.log(pathIndex)
-        /*let temp = bdm.computeFastestRoute()
-        console.log(temp)
-        setPathIndex(temp)
-        console.log(pathIndex)*/
+      .then(data => {   
         pathIndex = bdm.computeFastestRoute()
-        //console.log(bdm.computeFastestRoute())
-        /*let temp = new Array(pathIndex.length)
-        for (let l = 0; l<pathIndex.length; l++){
-          temp[l] = placeList[pathIndex[l]]
-        }
-        setPath(temp)*/
         path = new Array(pathIndex.length)
         for (let l = 0; l<pathIndex.length; l++){
           path[l] = placeList[pathIndex[l]]
         }
-        //setDurationMatrix(bdm.getDurationMatrix())
         durationMatrix = bdm.getDurationMatrix()
         setData(initialData)
-        console.log('Results from API obtained')
         setAPIran(true)
     })
       .catch(error => {
@@ -230,9 +172,9 @@ const BestRoute  = ({ route,navigation }) => {
           <View style={{ flexDirection:'column'}}>   
               {/* the place row*/}
               <View style={[styles.placeInfo,{ flexDirection: 'row', flex:1}]}>
-                <Image source = {item.img} style= {{width: 0.2*WIDTH, height:0.2*WIDTH, borderRadius:10,left:10,top:10}}/>
+                <Image source = {item.img} style= {{width:HEIGHT/10.5, height:HEIGHT/10.5, borderRadius:10,left:10,top:10}}/>
                 {/* the details*/}
-                <View style={{ flexDirection: 'column',top:10, left:20, height:0.2*WIDTH, width: WIDTH/1.8}}>
+                <View style={{ flexDirection: 'column',top:10, left:15, height:0.2*WIDTH, width: WIDTH/1.8}}>
                   {/* Place name*/}
                   <View style={{ flexDirection: 'row'}}>
                     <Icons2 name="location-sharp" size={WIDTH*0.05} color='red' style={{top:5}}/>
@@ -244,13 +186,13 @@ const BestRoute  = ({ route,navigation }) => {
                     <View style={{ flexDirection: 'column'}}>
                       {/* Operating Day */}
                       <View style={{ flexDirection: 'row'}}>
-                        <Text style ={{fontWeight:'bold'}}> Operating Day   : </Text>
+                        <Text style ={{fontWeight:'bold'}}> Operating Day  : </Text>
                         <Text>{item.fromDay == item.toDay?" Daily":item.fromDay+" - "+item.toDay}</Text>
                       </View>
 
                      {/* Operating Time */}
                       <View style={{ flexDirection: 'row'}}>
-                        <Text style ={{fontWeight:'bold'}}> Operating Time : </Text>
+                        <Text style ={{fontWeight:'bold'}}> Operating Time: </Text>
                         <Text>{item.fromTime} - {item.toTime}</Text>
                       </View>
                     </View>
@@ -414,7 +356,7 @@ const BestRoute  = ({ route,navigation }) => {
           keyExtractor={(item) => "_" + item.key}
           renderItem={renderItem}
           contentContainerStyle={{
-            paddingTop:0.12*HEIGHT,
+            paddingTop:0.19*HEIGHT,
             paddingBottom: 0.1*HEIGHT,
             alignItems:'center',
             justifyContent:'center',
@@ -423,16 +365,16 @@ const BestRoute  = ({ route,navigation }) => {
       
         {/*header*/}
         <View style={{position:'absolute', alignSelf:'flex-end'}}>
-          <ImageBackground source = {data[0].img} style= {{width: WIDTH, height:0.1*HEIGHT}}>
+          <ImageBackground source = {data[0].img} style= {{width: WIDTH, height:0.15*HEIGHT}}>
           <View style = {styles.overlay}>
             <View style={{flexDirection: 'row', flex:1}}>
               <View style={{flexDirection: 'row', flex:1}}>
                 {/* return icon*/}
                 <TouchableOpacity onPress={()=>navigation.goBack()}>
-                  <Icons name="arrowleft" size={WIDTH*0.08} color='white' style={{top:HEIGHT*0.025}}/>
+                  <Icons name="arrowleft" size={WIDTH*0.08} color='white' style={{top:HEIGHT*0.055}}/>
                 </TouchableOpacity>
                 {/* Trip Details*/}
-                <View style={{ flexDirection: 'column',top:10, left:20, height:0.2*WIDTH}}>
+                <View style={{ flexDirection: 'column',top:HEIGHT*0.045, left:20, height:0.2*WIDTH}}>
                   <View style={{ flexDirection: 'row'}}>
                     <Text style={{fontWeight:'bold', fontSize:HEIGHT*0.018, color:'white'}}>{startDateString}</Text>
                     <Text style={{fontSize:HEIGHT*0.018}}>{"  "}</Text>
@@ -446,7 +388,7 @@ const BestRoute  = ({ route,navigation }) => {
                 </View>
               </View>
               {/* Options*/}
-              <TouchableOpacity style={{right:WIDTH*0.05,top:HEIGHT*0.035}} onPress={toggleOverlay}>
+              <TouchableOpacity style={{right:WIDTH*0.05,top:HEIGHT*0.055}} onPress={toggleOverlay}>
                 <Icons4 name="edit" size={WIDTH*0.07} color='white'/>
               </TouchableOpacity>
 
@@ -485,8 +427,6 @@ const BestRoute  = ({ route,navigation }) => {
   
   return (
     <SafeAreaView style={styles.container}>
-        {/*data?null:getFastestPath()*/}
-        {/*data[0]?setAPIran(true):null*/}
         {APIran?renderRoute():<ActivityIndicator size={WIDTH/5} color="#0000ff" style={{alignItems:'center',justifyContent: "center", top: HEIGHT/3}}/>}
     </SafeAreaView>
   );// end of return 
@@ -496,20 +436,19 @@ const BestRoute  = ({ route,navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    top:25,
     flex:1,
     backgroundColor: 'rgb(200, 247, 197)',
   },
   rowItem: {
     top:0.05*HEIGHT,
-    height: HEIGHT/5,
+    height: HEIGHT/4.8,
     width: WIDTH*0.9,
     margin:2,
     alignItems: "flex-start",
     justifyContent: "center",
   },
   modal:{
-    height: HEIGHT/20,
+    height: 0.055*HEIGHT,
     width: WIDTH*0.35,
     borderRadius:10,
     borderWidth:3,
@@ -528,6 +467,17 @@ const styles = StyleSheet.create({
     elevation: 6,
     position:'relative',
   },
+  popUpFieldTitle:{
+    fontWeight:'bold',
+    fontSize:WIDTH*0.05, 
+    padding:WIDTH*0.03,
+    backgroundColor:'rgb(200, 247, 197)'
+  },
+  popUpFieldInput: {
+    fontWeight:'bold',
+    left:3,
+    top:3
+  },
   text: {
     color: "black",
     fontSize: 17,
@@ -537,7 +487,7 @@ const styles = StyleSheet.create({
   },
   overlay:{
     width: WIDTH,
-    height:0.1*HEIGHT,
+    height:0.15*HEIGHT,
     backgroundColor: 'rgba(0,0,0,0.4)',
     left:0
 },
