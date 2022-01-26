@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesome5 } from '@expo/vector-icons/';
-import { Alert, FlatList, Image, SafeAreaView, ScrollView, KeyboardAvoidingView, StyleSheet, Text, View, TouchableOpacity, Dimensions,BackHandler } from 'react-native';
+import { Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, View, TouchableOpacity, Dimensions,BackHandler } from 'react-native';
 import { db } from '../firebase'
 import { useNavigation } from '@react-navigation/native'
 import moment from 'moment'
@@ -63,15 +63,24 @@ const HomeScreen = () => {
   const Event = ({ eventList }) => {
 
     return (
-      <TouchableOpacity
-        style={styles.eventContainer}
-        onPress={() => navigation.navigate('PlaceDisplay', { placeID: eventList.placeID })}
-      >
-        <Text style={styles.subtitle}>{eventList.title}</Text>
+      <View style={styles.eventContainer}>
+        <View style={{flexDirection: "row", justifyContent: "space-between"}}>
+          <Text style={styles.subtitle}>{eventList.title}</Text>
+          <TouchableOpacity
+            style={{marginTop: "3%"}}
+            onPress={() => navigation.navigate('PlaceDisplay', { placeID: eventList.placeID })}>
+            <FontAwesome5 
+                name='info-circle'
+                size={30} 
+                color='#38761D'                
+                />
+          </TouchableOpacity>
+        </View>
+        
         <Text style={styles.time}>Date: {moment.unix(eventList.fromDate.seconds).format("DD-MMM-YYYY (ddd)")} - {moment.unix(eventList.toDate.seconds).format("DD-MMM-YYYY (ddd)")}</Text>
         <Text style={styles.time}>Time: {eventList.fromTime} - {eventList.toTime}</Text>
         <Text style={styles.time}>Location: {eventList.spotName}</Text>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -81,13 +90,13 @@ const HomeScreen = () => {
       const place = [];
 
       querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data()["spotName"]);
         place.push({
           ...doc.data(),
           id: doc.id,
         });
       });
       setPlaces(place);
+      console.log("Get places sucessfully.");
     })
       .catch((error) => {
         console.log("Error getting documents: ", error);
@@ -100,12 +109,12 @@ const HomeScreen = () => {
       const eventList = [];
 
       querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data()["spotName"]);
         eventList.push({
           ...doc.data(),
           id: doc.id,
         });
       });
+      console.log("Get events sucessfully.");
       setEventList(eventList);
     })
       .catch((error) => {
@@ -114,20 +123,19 @@ const HomeScreen = () => {
   };
 
   return (
-    //<KeyboardAvoidingView>
-    <SafeAreaView backgroundColor='white' height='100%' width='100%'>
+    <SafeAreaView backgroundColor='rgb(200,247,197)' height='100%' width='100%'>
 
       {Header()}
 
       {/*Search Bar*/}
-      <View flexDirection='row' justifyContent='space-evenly' marginRight='3%'>
+      <View flexDirection='row' justifyContent='space-evenly' backgroundColor="#10533f">
         {SearchBar()}
         <TouchableOpacity onPress={() => navigation.navigate('Filter')}>
           <FontAwesome5
             style={styles.icons}
             name='filter'
             size={30}
-            color='lightgrey'
+            color='white'
           />
         </TouchableOpacity>
       </View>
@@ -160,16 +168,23 @@ const HomeScreen = () => {
           keyExtractor={item => item.id.toString()}
           data={place}
           renderItem={({ item }) => <Card place={item} />}
-          style={styles.container}
           numColumns={(2)}
           columnWrapperStyle={{ flex: 1 }}
         />
+
+        {/* Display View Button */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Filter')}
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>View more place</Text>
+        </TouchableOpacity>
+
       </ScrollView>
 
       {Footer()}
 
     </SafeAreaView>
-    //</KeyboardAvoidingView>  
   );
 };
 
@@ -182,7 +197,7 @@ const styles = StyleSheet.create({
     padding: 5,
     alignItems: 'center',
     borderRadius: 15,
-    backgroundColor: '#f0f8ff',
+    backgroundColor: 'white',
     width: windowWidth * 0.45,
     elevation: 10,
   },
@@ -192,6 +207,7 @@ const styles = StyleSheet.create({
     padding: '5%',
     marginBottom: '3%',
     textAlign: 'center',
+    textTransform: 'capitalize',
   },
   cardImage: {
     width: '100%',
@@ -202,7 +218,8 @@ const styles = StyleSheet.create({
   },
   icons: {
     marginBottom: '20%',
-    marginTop: '90%',
+    marginTop: '70%',
+    marginRight: '3%'
   },
   title: {
     marginTop: '3%',
@@ -211,7 +228,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
   },
   eventContainer: {
-    backgroundColor: 'rgba(211,229,207, 0.5)',
+    backgroundColor: '#f5f5f5',
     paddingHorizontal: 10,
     paddingBottom: 20,
     borderRadius: 10,
@@ -227,7 +244,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontWeight: 'bold',
-    color: 'rgba(11, 61, 42, 1)',
+    color: '#38761D',
     marginTop: 15,
     width: "80%",
     fontSize: 20,
@@ -239,7 +256,21 @@ const styles = StyleSheet.create({
     color: "rgba(135, 135, 135, 1)",
     fontWeight: 'bold',
   },
-
+  button: {
+    backgroundColor: '#38761D',
+    width: '95%',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: "3%",
+    marginBottom: "3%",
+   
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+  },
 });
 
 export default HomeScreen;

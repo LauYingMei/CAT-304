@@ -13,12 +13,12 @@ const SearchBar = () => {
   useEffect(() => {
     db.collection('Place').get().then((querySnapshot) => {
           querySnapshot.forEach((doc) => {
-            console.log(doc.id, " => ", doc.data()["spotName"]);
             placeName.push({
               id: doc.id,
               name: doc.data()["spotName"]
             });
         });
+        console.log("Get places sucessfully.");
         setPlaceName(placeName);
     })
     .catch((error) => {
