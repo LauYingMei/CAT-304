@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesome5 } from '@expo/vector-icons/';
-import { Alert, FlatList, Image, SafeAreaView, ScrollView, KeyboardAvoidingView, StyleSheet, Text, View, TouchableOpacity, Dimensions,BackHandler } from 'react-native';
+import { Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, View, TouchableOpacity, Dimensions,BackHandler } from 'react-native';
 import { db } from '../firebase'
 import { useNavigation } from '@react-navigation/native'
 import moment from 'moment'
@@ -90,13 +90,13 @@ const HomeScreen = () => {
       const place = [];
 
       querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data()["spotName"]);
         place.push({
           ...doc.data(),
           id: doc.id,
         });
       });
       setPlaces(place);
+      console.log("Get places sucessfully.");
     })
       .catch((error) => {
         console.log("Error getting documents: ", error);
@@ -109,12 +109,12 @@ const HomeScreen = () => {
       const eventList = [];
 
       querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data()["spotName"]);
         eventList.push({
           ...doc.data(),
           id: doc.id,
         });
       });
+      console.log("Get events sucessfully.");
       setEventList(eventList);
     })
       .catch((error) => {
@@ -123,7 +123,6 @@ const HomeScreen = () => {
   };
 
   return (
-    //<KeyboardAvoidingView>
     <SafeAreaView backgroundColor='rgb(200,247,197)' height='100%' width='100%'>
 
       {Header()}
@@ -177,7 +176,6 @@ const HomeScreen = () => {
       {Footer()}
 
     </SafeAreaView>
-    //</KeyboardAvoidingView>  
   );
 };
 
