@@ -8,8 +8,8 @@ import {
   Text,
   TouchableRipple,
 } from 'react-native-paper';
-import { clearPlaces } from '../actions/userAction';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {deletePlace} from '../actions/placeAction'
 const {width,height} = Dimensions.get('window')
 
 
@@ -22,7 +22,8 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [getData, setUserData] = useState(false);
   const userID = auth.currentUser?.uid;
-  
+  const [place, setPlace] = useState("");
+
   const handleEditProfile = () => {
     navigation.replace("editProfile")
     }
@@ -82,14 +83,38 @@ const setAll = () => {
       })
       .catch(error => alert(error.message))
   }
+
 // to delete the account
-const deleteAcc = () => {
+const deleteAcc = async() => {
+  
+    await
+    db.collection('Place').where("userID", "==", userID)
+    .get()
+    .then((querySnapshot) => {
+      const place = [];
+
+      querySnapshot.forEach((doc) => {
+        place.push({
+          ...doc.data(),
+          id: doc.id,
+        });
+        deletePlace(doc.id)
+      });
+      setPlace(place);
+      //setPlaceID(place.id)
+      console.log("Get places sucessfully.",place);
+    })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+     
+      //console.log(placeID);
   Alert.alert("Delete", "Are You Sure?", [
       {
           text: "Yes",
-          onPress: () => (
-              deleteAccount(userID),
-              navigation.navigate("Login")
+          onPress: async() => (
+             await deleteAccount(userID),
+              await navigation.navigate("Login")
           )
       },
       { text: "No" },

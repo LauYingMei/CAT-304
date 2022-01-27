@@ -156,7 +156,7 @@ return () => backHandler.remove();
       <View style={styles.inputLayout}>
 
       <Button   
-      onPress={()=>updateUser(data,userID,goBack)} 
+      onPress={()=>updateUser(data,userID)} 
       title="SUBMIT"
       color='#38761D'
       />

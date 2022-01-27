@@ -8,7 +8,7 @@ import {
   Text,
   TouchableRipple,
 } from 'react-native-paper';
-
+import {deletePlace} from '../actions/placeAction'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const {width,height} = Dimensions.get('window')
 
@@ -22,6 +22,7 @@ const userProfile = () => {
   const [email, setEmail] = useState("");
   const [getData, setUserData] = useState(false);
   const userID = auth.currentUser?.uid;
+  const [place, setPlace] = useState("");
   
   const handleEditProfile = () => {
     navigation.navigate("editProfile")
@@ -81,17 +82,40 @@ const setAll = () => {
   }
 
 // to delete the account
-const deleteAcc = () => {
-  Alert.alert("Delete", "Are You Sure?", [
-      {
-          text: "Yes",
-          onPress: () => (
-              deleteAccount(userID),
-              navigation.navigate("Login")
-          )
-      },
-      { text: "No" },
-  ]);
+const deleteAcc = async() => {
+  
+  await
+  db.collection('Place').where("userID", "==", userID)
+  .get()
+  .then((querySnapshot) => {
+    const place = [];
+
+    querySnapshot.forEach((doc) => {
+      place.push({
+        ...doc.data(),
+        id: doc.id,
+      });
+      deletePlace(doc.id)
+    });
+    setPlace(place);
+    //setPlaceID(place.id)
+    console.log("Get places sucessfully.",place);
+  })
+    .catch((error) => {
+      console.log("Error getting documents: ", error);
+    });
+   
+    //console.log(placeID);
+Alert.alert("Delete", "Are You Sure?", [
+    {
+        text: "Yes",
+        onPress: async() => (
+           await deleteAccount(userID),
+            await navigation.navigate("Login")
+        )
+    },
+    { text: "No" },
+]);
 }
 const handleBookmark = () => {
  

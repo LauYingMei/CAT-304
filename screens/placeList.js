@@ -104,7 +104,7 @@ const placeList = () => {
           {/*Display Owner Places*/}
           {place == '' ? <Text style={{ color: 'rgba(0,0,0,0.4)', fontSize: 20, marginLeft: '3%' }}>**No Place Posted**</Text> :
           <>       
-        <View style={{width: "97%", flexDirection: "row", flexWrap: "wrap"}}>
+        <View style={{width: "100%", flexDirection: "row", flexWrap: "wrap"}}>
           {place.map((item, index) => (<Card key={index} place={item} />))}
         </View>
           </>

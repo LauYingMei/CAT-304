@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { Alert, BackHandler,FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View, StatusBar, TouchableOpacity, Dimensions} from 'react-native';
+import { Alert, BackHandler,SafeAreaView, ScrollView, StyleSheet, Text, View, StatusBar, TouchableOpacity, Dimensions} from 'react-native';
 import { db,auth } from '../firebase'
 import { useNavigation } from '@react-navigation/native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -73,8 +73,8 @@ const Bookmark = ({ bookmark }) => {
   Alert.alert("Clear All Bookmark", "Are You Sure?", [
       {
           text: "Yes",
-          onPress: () => (
-              clearBookmark(userID),
+          onPress: async() => (
+              await clearBookmark(userID),
               FetchBookmark()
           )
       },
@@ -131,13 +131,11 @@ return (
 
       {/*Display bookmarked places*/}  
       {bookmark == '' ? <Text style={{ color: 'rgba(0,0,0,0.4)', fontSize: 20, marginLeft: '3%' }}>**No Bookmark**</Text> :
-        <FlatList
-          vertical
-          showsVerticalScrollIndicator={false}
-          keyExtractor={item => item.id.toString()}
-          data={bookmark}
-          renderItem={({ item }) => <Bookmark bookmark={item} />}
-        />
+      <>       
+        <View style={{width: "97%", flexDirection: "row", flexWrap: "wrap"}}>
+          {bookmark.map((item, index) => (<Bookmark key={index} bookmark={item} />))}
+        </View>
+          </>
     }
     
     </ScrollView>

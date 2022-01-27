@@ -193,7 +193,7 @@ const PlaceDisplay = () => {
                     console.log("No such user!")
             })
 
-        if(role=="user"){
+        
             document.collection("bookmarks").where("placeID", "==", placeID)
             .get()
             .then((querySnapshot) => {
@@ -204,7 +204,7 @@ const PlaceDisplay = () => {
             .catch((error) => {
                 console.log("Error check bookmark: ", error(message));
             })
-        }
+     
     }
 
     // to get user's own review to this place
