@@ -238,7 +238,7 @@ const Place = () => {
             {
                 text: "Yes",
                 onPress:async() => (
-                   await deletePlace(placeID, image),
+                   await deletePlace(placeID),
                    await navigation.replace("HomeScreen")
                 )
             },

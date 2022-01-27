@@ -77,7 +77,7 @@ export async function updatePlace(place, placeID) {
 }
 
 // delete place
-export async function deletePlace(placeID, image) {
+export async function deletePlace(placeID) {
     var doc = await db.collection("Place").doc(placeID)
 
     // delete event in subcollection of "Place"
@@ -136,20 +136,21 @@ export async function deletePlace(placeID, image) {
     })
 
 
-       
-        console.log("image: ", image)
-        image.map((image) => {
-            var name = image.imageName;
-            var ref = storage.ref().child("Places/images/" + name);
-
-            ref.delete().then(() => {
-                console.log("delete " + name + " image successfully")
-            })
-                .catch((error) => {
-                    console.log("delete image " + name + " fail with error: " + error)
-                })   
-        })
+       // delete image in storage
+       await doc.get().then((doc) => { 
+            doc.data().image.map((image) => {
+                var name = image.imageName;
+                var ref = storage.ref().child("Places/images/" + name);
     
+                ref.delete().then(() => {
+                    console.log("delete " + name + " image successfully")
+                })
+                    .catch((error) => {
+                        console.log("delete image " + name + " fail with error: " + error)
+                    })   
+            })
+        })
+        
 
     // delete place
     doc.delete()
