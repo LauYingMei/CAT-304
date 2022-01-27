@@ -1,6 +1,9 @@
-import { auth, db } from '../firebase'
+import { auth, db, storage } from '../firebase'
 import * as firebase from 'firebase'
-import { Alert } from 'react-native'
+import { Alert, ActivityIndicator, Dimensions, Modal } from 'react-native'
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 // add new place
 export async function addNewPlace(place) {
@@ -74,16 +77,90 @@ export async function updatePlace(place, placeID) {
 }
 
 // delete place
-export async function deletePlace(placeID) {
+export async function deletePlace(placeID, image) {
     var doc = await db.collection("Place").doc(placeID)
-    .delete()
+
+    // delete event in subcollection of "Place"
+    var internalEvent = doc.collection("events")
+    internalEvent.get().then((querySnapshot) => {
+        querySnapshot.forEach((doc1) => {
+            internalEvent.doc(doc1.id).delete().then(() => {
+                console.log('Event of', placeID, ' from internal is deleted by: ', auth.currentUser?.uid);
+            }).catch((error) => {
+                console.log("Error removing external event: ", error(message))
+            })
+        })
+    })
+
+    // delete event in collection "Event"
+    var externalEvent = db.collection("Event")
+    externalEvent.where("placeID", "==", placeID).get().then((querySnapshot) => {
+        querySnapshot.forEach((doc1) => {
+            externalEvent.doc(doc1.id).delete().then(() => {
+                console.log('Event of', placeID, ' from external is deleted by: ', auth.currentUser?.uid);
+            }).catch((error) => {
+                console.log("Error removing external event: ", error(message))
+            })
+        })
+    })
+
+    // delete review in subcollection of "Place"
+    var reviews = doc.collection("reviews")
+    reviews.get().then((querySnapshot) => {
+        querySnapshot.forEach((doc1) => {
+            reviews.doc(doc1.id).delete().then(() => {
+                console.log('Review of', placeID, ' is deleted by: ', auth.currentUser?.uid);
+            }).catch((error) => {
+                console.log("Error removing reviews: ", error(message))
+            })
+        })
+    })
+
+
+    // delete all bookmarks of this place ID in subcollection of "users"
+    const usersRef = db.collection("users")
+    usersRef.get().then((querySnapshot) => {
+        querySnapshot.forEach((doc1) => {
+            var user = usersRef.doc(doc1.id).collection("bookmarks").doc(placeID)
+                user.get().then((doc2) => {
+                    if (doc2.exists) {
+                        user.delete().then(() => {
+                            console.log(placeID, " deleted from bookmarks of ", doc1.userName);
+                        })
+                    }
+                })
+                .catch((error) => {
+                    console.log("Error getting user's bookmarks: ", error);
+                });
+        })
+    })
+
+
+       
+        console.log("image: ", image)
+        image.map((image) => {
+            var name = image.imageName;
+            var ref = storage.ref().child("Places/images/" + name);
+
+            ref.delete().then(() => {
+                console.log("delete " + name + " image successfully")
+            })
+                .catch((error) => {
+                    console.log("delete image " + name + " fail with error: " + error)
+                })   
+        })
+    
+
+    // delete place
+    doc.delete()
         .then(() => {
-            console.log('Place', placeID,  ' is deleted by: ', auth.currentUser?.uid)
+            console.log('Place', placeID, ' is deleted by: ', auth.currentUser?.uid)
             Alert.alert("Place removed!");
 
         }).catch(error => {
             Alert.alert("Something went wrong. Please try later! ");
             console.log("Remove place", placeID, "unsuccesslly")
+            console.log(error)
         })
 }
 
@@ -348,35 +425,35 @@ export async function updateEvent(placeID, eventID, title, fromDate, toDate, fro
 }
 
 // add new trip list
-export async function addNewTripList(data,tripName,StartDate,EndDate) {
-    
+export async function addNewTripList(data, tripName, StartDate, EndDate) {
+
     var doc2 = db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").doc()
     await doc2.set
-    ({
-        tripName: tripName,
-        tripPhoto: data[0].img,
-        tripStartDate: StartDate,
-        tripEndDate: EndDate,
-        time: firebase.firestore.FieldValue.serverTimestamp(),
-    }).then(function () {
-        //console.log('Trip is added by: ', auth.currentUser?.uid)
-        Alert.alert("Trip saved!");
-    }).catch(error => {
-        Alert.alert("Something went wrong. Please try later! ");
-        console.log("Save trip unsuccessfully")
-    })
+        ({
+            tripName: tripName,
+            tripPhoto: data[0].img,
+            tripStartDate: StartDate,
+            tripEndDate: EndDate,
+            time: firebase.firestore.FieldValue.serverTimestamp(),
+        }).then(function () {
+            //console.log('Trip is added by: ', auth.currentUser?.uid)
+            Alert.alert("Trip saved!");
+        }).catch(error => {
+            Alert.alert("Something went wrong. Please try later! ");
+            console.log("Save trip unsuccessfully")
+        })
 
     var doc3 = db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").doc(doc2.id).collection("TripPlace")
-    for(let i=data.length-1;i>=0;i--){
-        (data[i].driving_time?null:data[i].driving_time=0)
+    for (let i = data.length - 1; i >= 0; i--) {
+        (data[i].driving_time ? null : data[i].driving_time = 0)
         await doc3.doc().set
-        ({
-            placeNum: data[i].key.charAt((data[i].key).length - 1),
-            placeId: data[i].id,
-            placeName: data[i].label,
-            driveTime: data[i].driving_time,
-            time: firebase.firestore.FieldValue.serverTimestamp()
-        })
+            ({
+                placeNum: data[i].key.charAt((data[i].key).length - 1),
+                placeId: data[i].id,
+                placeName: data[i].label,
+                driveTime: data[i].driving_time,
+                time: firebase.firestore.FieldValue.serverTimestamp()
+            })
     }
 }
 
@@ -386,7 +463,7 @@ export async function removeTripList(tripID) {
     var doc = await db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").doc(tripID)
     doc.delete()
         .then(() => {
-            console.log('Trip',tripID, 'is deleted by: ', auth.currentUser?.uid)
+            console.log('Trip', tripID, 'is deleted by: ', auth.currentUser?.uid)
             Alert.alert("Trip removed!");
 
         }).catch(error => {

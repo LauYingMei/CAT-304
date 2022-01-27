@@ -44,6 +44,7 @@ import {
     BackHandler, 
     LogBox
 } from 'react-native'
+import { roundToNearestMinutes } from 'date-fns';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -53,7 +54,6 @@ const PlaceDisplay = () => {
     const route = useRoute();
     const userID = auth.currentUser?.uid;
     const placeID = route.params.placeID;
-
 
     const [navTabChosen, setNavTabChosen] = useState(1)
     const [bookmarked, setBookmarked] = useState(false)
@@ -193,7 +193,8 @@ const PlaceDisplay = () => {
                     console.log("No such user!")
             })
 
-        document.collection("bookmarks").where("placeID", "==", placeID)
+        if(role=="user"){
+            document.collection("bookmarks").where("placeID", "==", placeID)
             .get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
@@ -203,6 +204,7 @@ const PlaceDisplay = () => {
             .catch((error) => {
                 console.log("Error check bookmark: ", error(message));
             })
+        }
     }
 
     // to get user's own review to this place
@@ -440,12 +442,12 @@ const PlaceDisplay = () => {
     }
 
     // to delete particular event
-    const deleteEvent = (eventID) => {
+    const deleteEvent = async (eventID) => {
         Alert.alert("Delete", "Are You Sure?", [
             {
                 text: "Yes",
-                onPress: () => (
-                    toDeleteEvent(placeID, eventID),
+                onPress: async() => (
+                    await toDeleteEvent(placeID, eventID),
                     getEvent()
                 )
             },
@@ -522,7 +524,7 @@ const PlaceDisplay = () => {
 
     // Event that hapen when the fromTime(start of event time) is updated
     const fromTimePickerEvent = (event, selectedTime) => {
-        const currentTime = selectedTime || fromTime
+        const currentTime = selectedTime || fromTimeToShow
         setShowFTime(Platform.OS == 'ios')
         setFromTimeToShow(currentTime)
         setFromTime(getTimes(currentTime))
@@ -531,7 +533,7 @@ const PlaceDisplay = () => {
 
     // Event that hapen when the toTime(end of event time) is updated
     const toTimePickerEvent = (event, selectedTime) => {
-        const currentTime = selectedTime || toTime
+        const currentTime = selectedTime || toTimeToShow
         setShowTTime(Platform.OS == 'ios')
         setToTimeToShow(currentTime)
         setToTime(getTimes(currentTime))
@@ -1160,7 +1162,8 @@ const styles = StyleSheet.create({
     reviewerName: {
         fontWeight: 'bold',
         color: 'rgba(11, 61, 42, 1)',
-        marginLeft: 4
+        marginLeft: 4,
+        width: "62%"
     },
 
     time: {
