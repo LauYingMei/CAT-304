@@ -1,7 +1,7 @@
 import React, { useNavigation,useState, useEffect } from 'react';
 import {BackHandler,Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions} from 'react-native'
 import {MaterialCommunityIcons as Icon} from '@expo/vector-icons';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import Input from './Input';
 import { addNewUser } from '../actions/userAction';
 const {width,height} = Dimensions.get('window')
@@ -63,11 +63,14 @@ handleRegister = () => {
     .then(userCredentials => {
       const user = userCredentials.user;
       console.log('Registered with:', user.email);
-      
-    })
+      addNewUser(auth.currentUser?.email,ContactNo,role,userName);
+    
+    }
+    )
     .catch(error => alert(error.message))
 
-  addNewUser(auth.currentUser?.email,ContactNo,role,userName);
+ // addNewUser(auth.currentUser?.email,ContactNo,role,userName);
+ 
 }
 
   goBack = () => {
@@ -85,7 +88,7 @@ handleRegister = () => {
       <KeyboardAvoidingView
       style={styles.container}
       >
-     <ScrollView style={styles.innerContainer}>
+     <ScrollView style={styles.innerContainer} keyboardShouldPersistTaps='handled'>
       <View style={styles.content}>
      <Text style={styles.title}>
      Welcome!&nbsp; Register Here
@@ -108,6 +111,7 @@ handleRegister = () => {
           value={this.userName}
           onChangeText={userName => this.setState({userName})}
           style={styles.input}
+          maxLength={15} 
           />
       </View>
       <View style= {styles.registerForm}>
@@ -119,6 +123,7 @@ handleRegister = () => {
           onChangeText={ContactNo => this.setState({ContactNo})}
           style={styles.input}
           keyboardType="phone-pad"
+          maxLength={15} 
          />
         </View>
         <View style={styles.infoBoxWrapper}>
