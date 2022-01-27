@@ -100,18 +100,15 @@ const placeList = () => {
             return () => backHandler.remove();
    
           },[])}
-
+  
           {/*Display Owner Places*/}
           {place == '' ? <Text style={{ color: 'rgba(0,0,0,0.4)', fontSize: 20, marginLeft: '3%' }}>**No Place Posted**</Text> :
-       
-          <FlatList 
-            vertical
-            keyExtractor={item => item.id}
-            data = {place}
-            renderItem = {({item}) => <Card place = {item} />}
-            numColumns={(2)}
-            columnWrapperStyle={{flex: 1}}      
-            />
+          <>       
+        <View style={{width: "97%", flexDirection: "row", flexWrap: "wrap"}}>
+          {place.map((item, index) => (<Card key={index} place={item} />))}
+        </View>
+          </>
+         
           }     
         </ScrollView> 
       </SafeAreaView>   
