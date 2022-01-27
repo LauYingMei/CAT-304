@@ -233,13 +233,13 @@ const Place = () => {
     }
 
     // to permanent delete all the information of a place
-    const deleteAction = () => {
+    const deleteAction = async() => {
         Alert.alert("Permanent Delete", "Are You Sure?", [
             {
                 text: "Yes",
-                onPress:() => (
-                   deletePlace(placeID),
-                   navigation.replace("HomeScreen")
+                onPress:async() => (
+                   await deletePlace(placeID),
+                   await navigation.replace("HomeScreen")
                 )
             },
             { text: "no" },
@@ -332,7 +332,7 @@ const Place = () => {
 
     // Event that hapen when the fromTime(start of operation time) is updated
     const fromTimePickerEvent = (event, selectedTime) => {
-        const currentTime = selectedTime || fromTime
+        const currentTime = selectedTime || fromTimeToShow
         setShowFTime(Platform.OS == 'ios')
         setFromTimeToShow(currentTime)
         setFromTime(getTimes(currentTime))
@@ -342,7 +342,7 @@ const Place = () => {
 
     // Event that hapen when the toTime(end of operation time) is updated
     const toTimePickerEvent = (event, selectedTime) => {
-        const currentTime = selectedTime || toTime
+        const currentTime = selectedTime || toTimeToShow
         setShowTTime(Platform.OS == 'ios')
         setToTimeToShow(currentTime)
         setToTime(getTimes(currentTime))
