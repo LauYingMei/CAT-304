@@ -128,6 +128,7 @@ return () => backHandler.remove();
           onChangeText={text =>setContact(text)}
           style={styles.input}
           keyboardType="phone-pad"
+          maxLength={15} 
          />
         </View> 
         

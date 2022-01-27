@@ -45,21 +45,66 @@ export async function addNewUser(email,ContactNo, role, userName) {
             console.log(error.message)
         })
     }
+    function clearCollection(path) {
+        const ref = firestore.collection(path)
+        ref.onSnapshot((snapshot) => {
+          snapshot.docs.forEach((doc) => {
+            ref.doc(doc.id).delete()
+          })
+        })
+      }
+
 // delete user account
 export async function deleteAccount(userID) {
+   // path= db.collection("Place").where("userID", "==", userID).collection("reviews")
+   // clearCollection(path)
     await db.collection("Place").where("userID", "==", userID)
         .get()
         .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
+        //setPlaceID(doc.data().placeID)
         doc.ref.delete();
         console.log("All Places successfully deleted!")
         });
-        
-           // Alert.alert("All Places Removed!");
         })
         .catch((error) => {
-          //  Alert.alert("Something went wrong. Please try later! ");
             console.log("Error removing all places")
+        });
+    
+/*
+        await db.collection("Place").doc(placeID)
+        .collection("reviews").doc(userID)
+        .delete().then(() => {
+            console.log("Review successfully deleted!")
+           // Alert.alert("Review Removed!");
+        }).catch((error) => {
+           // Alert.alert("Something went wrong. Please try later! ");
+            console.log("Error removing review: ", error(message))
+            return
+        })
+
+        await db.collection("Place").doc(placeID)
+        .collection("events").doc(userID)
+        .delete().then(() => {
+            console.log("Events successfully deleted!")
+           // Alert.alert("Review Removed!");
+        }).catch((error) => {
+           // Alert.alert("Something went wrong. Please try later! ");
+            console.log("Error removing event: ", error(message))
+            return
+        })
+        */
+        await db.collection("Event").where("userID", "==", userID)
+        .get()
+        .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+        doc.ref.delete();
+        console.log("All events successfully deleted!")
+        });
+        
+        })
+        .catch((error) => {
+            console.log("Error removing all events")
         });
     await db.collection("users").doc(userID)
         .delete().then(() => {

@@ -273,7 +273,8 @@ export async function addNewEvent(placeID, spotName, title, fromDate, toDate, fr
         fromTime: fromTime,
         toTime: toTime,
         description: description,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        userID: auth.currentUser?.uid
     })
         .then(function () {
             console.log('Event is added by: ', auth.currentUser?.uid)
