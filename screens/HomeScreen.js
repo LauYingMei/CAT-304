@@ -122,6 +122,12 @@ const HomeScreen = () => {
       });
   };
 
+  //Get Place and Events from database
+  useEffect(() => { 
+    FetchEvent() 
+    FetchPlace()  
+  }, [])
+
   return (
     <SafeAreaView backgroundColor='rgb(200,247,197)' height='100%' width='100%'>
 
@@ -143,9 +149,6 @@ const HomeScreen = () => {
       {/*Content*/}
       <ScrollView vertical showsVerticalScrollIndicator={true} marginLeft="3%" marginBottom="3%">
 
-        {/* Get event from database*/}
-        {useEffect(() => { FetchEvent() }, [])}
-
         {/*Display Events (not expired)*/}
         <Text style={styles.title}>Events</Text>
         {eventList == '' ? <Text style={{ color: 'rgba(0,0,0,0.4)', fontSize: 20, marginLeft: '3%' }}>No Event</Text> :
@@ -158,20 +161,12 @@ const HomeScreen = () => {
           />
         }
 
-        {/* Get place from database*/}
-        {useEffect(() => { FetchPlace() }, [])}
-
         {/*Display Popular Places*/}
-        <Text style={styles.title}>Popular Places</Text>
-        <FlatList
-          vertical
-          keyExtractor={item => item.id.toString()}
-          data={place}
-          renderItem={({ item }) => <Card place={item} />}
-          numColumns={(2)}
-          columnWrapperStyle={{ flex: 1 }}
-        />
-
+        <Text style={styles.title}>Popular Places</Text>        
+        <View style={{width: "97%", flexDirection: "row", flexWrap: "wrap"}}>
+          {place.map((item, index) => (<Card key={index} place={item} />))}
+        </View>
+        
         {/* Display View Button */}
         <TouchableOpacity
           onPress={() => navigation.navigate('Filter')}
