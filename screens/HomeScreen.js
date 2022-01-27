@@ -250,6 +250,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "rgba(135, 135, 135, 1)",
     fontWeight: 'bold',
+    textTransform: 'capitalize',
   },
   button: {
     backgroundColor: '#38761D',
