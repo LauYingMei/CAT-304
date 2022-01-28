@@ -109,7 +109,7 @@ return () => backHandler.remove();
     
 
      <View style= {styles.registerForm}>
-     <Icon name="email" color="#13553b" size={25} style={styles.icon}/>
+     <Icon name="email" color="#13553b" size={18} style={styles.icon}/>
       <TextInput 
           placeholder="Email"
           value={email}
@@ -120,7 +120,7 @@ return () => backHandler.remove();
         />
       </View>
       <View style= {styles.registerForm}>
-     <Icon name="account-details" color="#13553b" size={25} style={styles.icon}/>
+     <Icon name="account-details" color="#13553b" size={18} style={styles.icon}/>
       <TextInput
           placeholder="User Name"
           value={userName}
@@ -130,7 +130,7 @@ return () => backHandler.remove();
           />
          </View> 
          <View style= {styles.registerForm}>
-        <Icon name="phone" color="#13553b" size={25} style={styles.icon}/> 
+        <Icon name="phone" color="#13553b" size={18} style={styles.icon}/> 
          <TextInput
           placeholder="Contact Number"
           value={ContactNo}

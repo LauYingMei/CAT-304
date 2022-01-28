@@ -93,25 +93,18 @@ return (
         <Text style={styles.title}>
              My Bookmarked Places
          </Text>
-        
-         <TouchableOpacity
-          style={styles.buttonSubmit}
-          onPress={()=>navigation.replace('HomeScreen')}
-          >
-            <Icon name="home" size={30} color='#10533f'/>
-           </TouchableOpacity>
+           
       </View>  
+      
+    
       <Text style={styles.note}>
           #Press to link to the place
       </Text>
       <Text style={styles.note}>
       #Press longer to delete the bookmark
       </Text>
-      <RoundIconBtn
-        onPress={() => {ClearBookmarkAction(userID)}}
-        antIconName='delete'
-        style={styles.delBtn}
-      />
+      
+    
     {/*Content*/}
     <ScrollView vertical showsVerticalScrollIndicator={true} marginLeft="10%" marginBottom="3%">
     
@@ -139,6 +132,17 @@ return (
     }
     
     </ScrollView>
+    <RoundIconBtn
+        onPress={() => {ClearBookmarkAction(userID)}}
+        antIconName='delete'
+        style={styles.delBtn}
+      />
+   
+        <RoundIconBtn
+        onPress={()=>navigation.replace('HomeScreen')}
+        antIconName='home'
+        style={styles.buttonSubmit}
+      />    
   </SafeAreaView>
 
 );
@@ -174,27 +178,32 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    marginBottom: windowHeight*.05,
+    marginBottom: windowHeight*.03,
     marginTop: 30,
     paddingLeft:0,
     padding: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+   // justifyContent: 'space-between',
     alignItems: 'center',
     alignContent: 'center',
     backgroundColor:"#10533f",
     width:windowWidth,
 },
 buttonSubmit: {
-    backgroundColor: '#9cd741',
-    width: '20%',
-    padding: 10,
-    borderRadius: 10,
+   // backgroundColor: '#9cd741',
+   // width: '20%',
+   // padding: 10,
+   // borderRadius: 10,
     alignItems: 'center',
+    bottom:windowHeight*0.01,
+    right:windowHeight*0.02, 
+    alignSelf:'flex-end'
+    
 },
 icons:{
   marginBottom: '20%',
   marginTop: '90%',
+  marginLeft: "1%"
 },
 note:{
     marginLeft:windowWidth*.02,
@@ -203,9 +212,16 @@ note:{
     color:'red',
 },
 delBtn: {
-  position: 'absolute',
-  right: windowWidth*.03,
-  top: windowHeight*.18,
+  //position: 'absolute',
+  //right: windowWidth*.03,
+  //alignSelf:'flex-end',
+  //top: windowHeight*.25,
+ // bottom:windowHeight*0.08,
+    
+    alignItems: 'center',
+    bottom:windowHeight*0.03,
+    right:windowHeight*0.02, 
+    alignSelf:'flex-end'
 },
 });
 

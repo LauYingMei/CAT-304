@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core'
 import React, {useState, useEffect} from 'react';
 import { db, auth } from '../firebase';
 import { deleteAccount } from '../actions/userAction';
-import {  Alert, View, StyleSheet, SafeAreaView,Dimensions,BackHandler} from 'react-native';
+import {  Alert, View, StyleSheet, SafeAreaView,Dimensions,BackHandler,ScrollView} from 'react-native';
 import {
   Title,
   Text,
@@ -122,8 +122,8 @@ const deleteAcc = async() => {
 }
   return (
 <SafeAreaView style={styles.container}>
-
- <View style={styles.userInfoSection}>
+<ScrollView vertical showsVerticalScrollIndicator={true} marginLeft="3%" marginBottom="3%">
+<View style={styles.userInfoSection}>
         <View style={{flexDirection: 'row', marginTop: 15}}>
          
           <View style={{marginLeft: 20}}>
@@ -185,6 +185,8 @@ const deleteAcc = async() => {
         </TouchableRipple>
         
       </View>
+</ScrollView>
+ 
     </SafeAreaView>
   );
 };

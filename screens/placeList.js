@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { BackHandler,FlatList, Image, SafeAreaView, ScrollView, KeyboardAvoidingView,StyleSheet, Text, View, StatusBar, TouchableOpacity, Dimensions} from 'react-native';
+import { BackHandler,Image, SafeAreaView, ScrollView, StyleSheet, Text, View, StatusBar, TouchableOpacity, Dimensions} from 'react-native';
 import { db,auth } from '../firebase'
 import { useNavigation } from '@react-navigation/native'
 import Rating from '../screens/Rating';
@@ -60,8 +60,6 @@ const placeList = () => {
 }
 
   return(
-    <KeyboardAvoidingView>
-    
     
       <SafeAreaView backgroundColor='#c8f7c5' height='100%' width='100%'>
       <StatusBar translucent backgroundColor="rgba(0,0,0,0.1)" />
@@ -73,12 +71,7 @@ const placeList = () => {
              My Agrotourism Spot
          </Text>
         
-         <TouchableOpacity
-          style={styles.buttonSubmit}
-          onPress={()=>navigation.replace('HomeScreen')}
-          >
-            <Icon name="home" size={30} color='#10533f'/>
-           </TouchableOpacity>
+         
       </View>  
         {/*Content*/}
         <ScrollView vertical showsVerticalScrollIndicator={true} marginLeft="3%"  marginBottom="3%">  
@@ -111,8 +104,14 @@ const placeList = () => {
          
           }     
         </ScrollView> 
+        <TouchableOpacity
+          style={styles.buttonSubmit}
+          onPress={()=>navigation.replace('HomeScreen')}
+          >
+            <Icon name="home" size={30} color='#10533f'/>
+           </TouchableOpacity>
       </SafeAreaView>   
-    </KeyboardAvoidingView>  
+   
   );
 };
 
@@ -145,23 +144,27 @@ const styles = StyleSheet.create({
     fontWeight: 'bold', 
     fontSize: 24,
     color:'white',
+    
   },
   header: {
     marginBottom: 10,
     marginTop: 30,
     padding: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    //justifyContent: 'space-between',
     alignItems: 'center',
-    alignContent: 'center',
+    textAlign:"center",
     backgroundColor:"#10533f",
 },
 buttonSubmit: {
-    backgroundColor: '#9cd741',
-    width: '20%',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
+  backgroundColor: '#9cd741',
+  width: '20%',
+  padding: 10,
+  borderRadius: 10,
+  alignItems: 'center',
+  bottom:windowHeight*0.01,
+  right:windowHeight*0.01, 
+  alignSelf:'flex-end'
 },
 
 });

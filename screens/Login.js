@@ -48,11 +48,18 @@ const Login = () => {
       <ScrollView showsVerticalScrollIndicator={false} >
       <KeyboardAvoidingView
       style={styles.container}>
-
+ 
       <View>
-      <Image height={300} width= {400} source={require('./../assets/image/Logo.png')} style={styles.logoImg}/>
+      <Image 
+    source={require('./../assets/image/Logo.png')}
+    style={{height:height*0.4,
+            width:width}}
+    resizeMode="contain"
+      
+      
+      />
       </View>
-  
+     
       <View style={styles.inputContainer}>
        
         <TextInput
@@ -145,13 +152,14 @@ const Login = () => {
            },
 
         logoImg:{
-            height:height*0.4,
-            width:width, 
+            
+            
         },
         buttonContainer: {
           width: width*0.6,
           justifyContent: 'center',
           alignItems: 'center',
+          paddingTop:height*.05,
           marginTop: 20,
         },
         button: {

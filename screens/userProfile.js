@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core'
 import React, {useState, useEffect, useContext} from 'react';
 import { db, auth } from '../firebase';
 import { deleteAccount } from '../actions/userAction';
-import {  Alert, View, StyleSheet, SafeAreaView,Dimensions,BackHandler} from 'react-native';
+import {  Alert, View, StyleSheet,ScrollView, SafeAreaView,Dimensions,BackHandler} from 'react-native';
 import {
   Title,
   Text,
@@ -129,7 +129,8 @@ const handleTrip = () => {
 }
   return (
 <SafeAreaView style={styles.container}>
- <View style={styles.userInfoSection}>
+<ScrollView vertical showsVerticalScrollIndicator={true} marginLeft="3%" marginBottom="3%">
+<View style={styles.userInfoSection}>
         <View style={{flexDirection: 'row', marginTop: 15}}>
          
           <View style={{marginLeft: 20}}>
@@ -197,6 +198,8 @@ const handleTrip = () => {
         </TouchableRipple>
         
       </View>
+</ScrollView>
+ 
     </SafeAreaView>
   );
 };
@@ -206,6 +209,7 @@ export default userProfile;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    height: height,
   },
   userInfoSection: {
     paddingHorizontal: 30,
