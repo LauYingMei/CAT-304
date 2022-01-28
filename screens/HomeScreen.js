@@ -109,10 +109,13 @@ const HomeScreen = () => {
       const eventList = [];
 
       querySnapshot.forEach((doc) => {
-        eventList.push({
-          ...doc.data(),
-          id: doc.id,
-        });
+        if (doc.data().toDate.toDate().setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)){
+          eventList.push({
+            ...doc.data(),
+            id: doc.id,
+          });
+        }
+        
       });
       console.log("Get events sucessfully.");
       setEventList(eventList);
