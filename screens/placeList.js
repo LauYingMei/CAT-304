@@ -75,7 +75,7 @@ const placeList = () => {
         
          <TouchableOpacity
           style={styles.buttonSubmit}
-          onPress={()=>navigation.navigate('HomeScreen')}
+          onPress={()=>navigation.replace('HomeScreen')}
           >
             <Icon name="home" size={30} color='#10533f'/>
            </TouchableOpacity>

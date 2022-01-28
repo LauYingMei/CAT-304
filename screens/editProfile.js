@@ -1,6 +1,6 @@
 import { useNavigation} from '@react-navigation/core'
 import React, { useState, useEffect } from 'react'
-import {Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions,BackHandler} from 'react-native'
+import {Alert,Picker,KeyboardAvoidingView,StyleSheet, Text,TextInput, View,TouchableOpacity,ScrollView,Button,Dimensions,BackHandler} from 'react-native'
 import { auth,db} from '../firebase'
 import { updateUser } from '../actions/userAction'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -19,17 +19,22 @@ const editProfile = () => {
  
  
 
-  useEffect(async () => {
+  useEffect(() => {
        
-    await setAll();
+   setAll();
   // control physical back button
   const backAction = () => {
-    if(user.role=="owner"){
-      navigation.navigate("Profile")
-     }
-     if(user.role=="user"){
-      navigation.navigate("userProfile")
-     }     
+    Alert.alert('Exit','Are you sure want to close this application?', [
+      {
+          text: "Yes",
+          onPress:() => (
+              BackHandler.exitApp()
+          )
+      },
+      {
+          text: "no",
+      },
+  ]);
     return true;
 };
 
@@ -42,10 +47,10 @@ return () => backHandler.remove();
  }, [getData]
  )
  
-  const setAll =async () => {
+  const setAll =() => {
     var docRef = db.collection("users").doc(userID);
    console.log(auth.currentUser?.uid);
-   await docRef.get().then((doc) => {
+    docRef.get().then((doc) => {
        if (doc.exists) {
           console.log("Document data:", doc.data());
           setUser(doc.data());
@@ -67,14 +72,14 @@ return () => backHandler.remove();
    });
    }
   const goBack = () => {
-   
+    setAll()
    if(user.role=="owner"){
      setAll()
-    navigation.navigate("Profile")
+    navigation.replace("Profile")
    }
    if(user.role=="user"){
-     setAll()
-    navigation.navigate("userProfile")
+    setAll()
+    navigation.replace("userProfile")
    }     
       
   }
@@ -85,7 +90,11 @@ return () => backHandler.remove();
     email: email,
   }
 
-  
+  const handleUpdate =async (event) => {
+    event.preventDefault();
+    await updateUser(data,userID)
+     setAll()
+  }
   
   return (
     <KeyboardAvoidingView
@@ -156,7 +165,7 @@ return () => backHandler.remove();
       <View style={styles.inputLayout}>
 
       <Button   
-      onPress={()=>updateUser(data,userID)} 
+      onPress={handleUpdate} 
       title="SUBMIT"
       color='#38761D'
       />

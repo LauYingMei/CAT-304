@@ -18,7 +18,8 @@ export async function updateUser(user, userID) {
         .then(function () {
             console.log('User is updated by user ', auth.currentUser?.uid)
             Alert.alert("User is updated!");
-
+            
+            
         }).catch(error => {
             alert("Something went wrong. Please try later! ");
             console.log(error.message)
