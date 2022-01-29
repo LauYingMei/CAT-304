@@ -4,7 +4,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './screens/Login';
-import Main from './screens/Main';
 import HomeScreen from './screens/HomeScreen';
 import Place from './screens/Place';
 import PlaceDisplay from './screens/PlaceDisplay';
@@ -51,7 +50,7 @@ export default function App() {
         <Stack.Screen name="BestRoute" component={BestRoute} />
         </Stack.Group>
 
-        <Stack.Screen name="Main" component={Main} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
