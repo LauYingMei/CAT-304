@@ -83,16 +83,13 @@ const setAll = () => {
       })
       .catch(error => alert(error.message))
   }
-
-// to delete the account
-const deleteAcc = async() => {
+  const delPlace=(userID) =>{
   
-    await
     db.collection('Place').where("userID", "==", userID)
     .get()
     .then((querySnapshot) => {
       const place = [];
-
+  
       querySnapshot.forEach((doc) => {
         place.push({
           ...doc.data(),
@@ -107,12 +104,17 @@ const deleteAcc = async() => {
       .catch((error) => {
         console.log("Error getting documents: ", error);
       });
-     
+  }
+// to delete the account
+const deleteAcc = async() => {
+  
+    
       //console.log(placeID);
   Alert.alert("Delete", "Are You Sure?", [
       {
           text: "Yes",
           onPress: async() => (
+            await delPlace(userID),
              await deleteAccount(userID),
               await navigation.navigate("Login")
           )

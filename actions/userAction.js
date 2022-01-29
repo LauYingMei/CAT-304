@@ -60,7 +60,7 @@ export async function deleteAccount(userID) {
     
       
     clearBookmark(userID)
-    /*await db.collection("users").doc(userID)
+    await db.collection("users").doc(userID)
         .delete().then(() => {
             console.log("Doc successfully deleted!")
             
@@ -74,7 +74,7 @@ export async function deleteAccount(userID) {
         }).catch((error) => {
             console.log("Error removing account")
         });
-     */   
+      
 }
 
 export async function reauthenticate(currentPassword){
