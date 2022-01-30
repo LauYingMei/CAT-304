@@ -1,7 +1,8 @@
 import { useNavigation } from '@react-navigation/core'
 import React, {useState, useEffect} from 'react';
+import { clearBookmark } from '../actions/userAction';
 import { db, auth } from '../firebase';
-import { deleteAccount } from '../actions/userAction';
+import * as firebase from 'firebase'
 import {  Alert, View, StyleSheet, SafeAreaView,Dimensions,BackHandler,ScrollView} from 'react-native';
 import {
   Title,
@@ -9,7 +10,7 @@ import {
   TouchableRipple,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {deletePlace} from '../actions/placeAction'
+import {deletePlace,removeTripList} from '../actions/placeAction'
 const {width,height} = Dimensions.get('window')
 
 
@@ -23,6 +24,7 @@ const Profile = () => {
   const [getData, setUserData] = useState(false);
   const userID = auth.currentUser?.uid;
   const [place, setPlace] = useState("");
+  const [del, setDel] = useState(false);
 
   const handleEditProfile = () => {
     navigation.replace("editProfile")
@@ -83,44 +85,97 @@ const setAll = () => {
       })
       .catch(error => alert(error.message))
   }
-  const delPlace=(userID) =>{
-  
-    db.collection('Place').where("userID", "==", userID)
-    .get()
-    .then((querySnapshot) => {
-      const place = [];
-  
-      querySnapshot.forEach((doc) => {
-        place.push({
-          ...doc.data(),
-          id: doc.id,
+  const deleteAccount=(userID) =>{    
+    
+    db.collection("users").doc(userID)
+        .delete().then(() => {
+            console.log("Doc successfully deleted!")
+            
+        }).catch((error) => {
+            console.log("Error removing doc")
+        })
+        const user = firebase.auth().currentUser;
+
+        user.delete().then(() => {
+            Alert.alert("Account is deleted!");
+            navigation.navigate("Login")
+        }).catch((error) => {
+            console.log("Error removing account")
         });
-        deletePlace(doc.id)
+      
+}
+ 
+const delPlace=(userID) =>{
+  db.collection('Place').where("userID", "==", userID)
+  .get()
+  .then((querySnapshot) => {
+    const place = [];
+
+    querySnapshot.forEach((doc) => {
+      place.push({
+        ...doc.data(),
+        id: doc.id,
       });
-      setPlace(place);
-      //setPlaceID(place.id)
-      console.log("Get places sucessfully.",place);
-    })
-      .catch((error) => {
-        console.log("Error getting documents: ", error);
+      deletePlace(doc.id)
+    });
+    
+    setPlace(place);
+    setDel(true);
+    console.log("Get places sucessfully.",place);
+  })
+  
+    .catch((error) => {
+      console.log("Error getting documents: ", error);
+    });
+    
+}
+const delTrip =(userID) => {
+  
+  db.collection("users").doc(userID).collection("TripLists")
+  .get()
+  .then((querySnapshot) => {
+    const trip = [];
+
+    querySnapshot.forEach((doc) => {
+      trip.push({
+        ...doc.data(),
+        id: doc.id,
       });
-  }
+      removeTripList(doc.id)
+    });
+   
+    console.log("Get places sucessfully.",place);
+  })
+    .catch((error) => {
+      console.log("Error getting documents: ", error);
+    });
+  
+}
 // to delete the account
 const deleteAcc = async() => {
-  
-    
-      //console.log(placeID);
-  Alert.alert("Delete", "Are You Sure?", [
+ 
+  Alert.alert("Delete", "Are You Sure? **Clear data before delete", [
+      
       {
+        text: "Clear all data",
+        onPress: async() => (
+          
+           delPlace(userID),
+           delTrip(userID),
+           clearBookmark(userID)
+           
+        )
+    },
+    {
           text: "Yes",
           onPress: async() => (
-            await delPlace(userID),
-             await deleteAccount(userID),
-              await navigation.navigate("Login")
+            deleteAccount(userID)
+            
           )
       },
       { text: "No" },
   ]);
+  
 }
   return (
 <SafeAreaView style={styles.container}>

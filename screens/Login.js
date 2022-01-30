@@ -20,7 +20,7 @@ const Login = () => {
         navigation.replace('HomeScreen')
         }
       })
-  
+      
       return unsubscribe
     }, [])
     

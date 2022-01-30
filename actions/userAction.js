@@ -46,36 +46,8 @@ export async function addNewUser(email,ContactNo, role, userName) {
             console.log(error.message)
         })
     }
-   /* function clearCollection(path) {
-        const ref = firestore.collection(path)
-        ref.onSnapshot((snapshot) => {
-          snapshot.docs.forEach((doc) => {
-            ref.doc(doc.id).delete()
-          })
-        })
-      }*/
+  
 
-// delete user account
-export async function deleteAccount(userID) {
-    
-      
-    clearBookmark(userID)
-    await db.collection("users").doc(userID)
-        .delete().then(() => {
-            console.log("Doc successfully deleted!")
-            
-        }).catch((error) => {
-            console.log("Error removing doc")
-        })
-        const user = firebase.auth().currentUser;
-
-        user.delete().then(() => {
-            Alert.alert("Account is deleted!");
-        }).catch((error) => {
-            console.log("Error removing account")
-        });
-      
-}
 
 export async function reauthenticate(currentPassword){
   const user = firebase.auth().currentUser;
