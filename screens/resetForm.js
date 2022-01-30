@@ -10,7 +10,7 @@ const {width,height} = Dimensions.get('window')
     const navigation = useNavigation()
     
     const [email, setEmail] = useState("");
-    const [confirmEmail, setconfirmEmail] = useState(-"");
+    const [confirmEmail, setconfirmEmail] = useState("");
   
   
   const goBack = () => {

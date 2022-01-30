@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
     marginTop: 30,
     padding: 12,
     flexDirection: 'row',
-    //justifyContent: 'space-between',
     alignItems: 'center',
     textAlign:"center",
     backgroundColor:"#10533f",
