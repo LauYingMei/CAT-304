@@ -17,10 +17,11 @@ const Login = () => {
     useEffect(() => {
       const unsubscribe = auth.onAuthStateChanged(user => {
         if (user) {
+          console.log("go")
         navigation.replace('HomeScreen')
         }
       })
-  
+      
       return unsubscribe
     }, [])
     
