@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesome5 } from '@expo/vector-icons/';
-import { Alert, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, View, TouchableOpacity, Dimensions,BackHandler } from 'react-native';
+import { Alert, FlatList, Image, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View, TouchableOpacity, Dimensions,BackHandler } from 'react-native';
 import { db } from '../firebase'
 import { useNavigation } from '@react-navigation/native'
 import moment from 'moment'
@@ -17,7 +17,10 @@ const HomeScreen = () => {
 
   const [place, setPlaces] = useState([]);
   const [eventList, setEventList] = useState([])
+  const [color, changeColor] = useState('red');
+  const [refreshing, setRefreshing] = React.useState(false);
   const navigation = useNavigation()
+
 
   useEffect(() => {
     // control physical back button
@@ -43,6 +46,17 @@ const HomeScreen = () => {
 
     return () => backHandler.remove();
   }, [])
+
+  //Refresh control
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      changeColor('blue');
+      setRefreshing(false);
+    }, 2000);
+    FetchEvent() 
+    FetchPlace()
+  };
 
   //Display place image with name
   const Card = ({ place }) => {
@@ -150,7 +164,12 @@ const HomeScreen = () => {
       </View>
 
       {/*Content*/}
-      <ScrollView vertical showsVerticalScrollIndicator={true} marginLeft="3%" marginBottom="3%">
+      <ScrollView 
+        vertical 
+        showsVerticalScrollIndicator={true} 
+        style={{marginLeft: "3%" , marginBottom: "3%"}}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}
+        >
 
         {/*Display Events (not expired)*/}
         <Text style={styles.title}>Events</Text>
@@ -205,7 +224,6 @@ const styles = StyleSheet.create({
     padding: '5%',
     marginBottom: '3%',
     textAlign: 'center',
-    textTransform: 'capitalize',
   },
   cardImage: {
     width: '100%',

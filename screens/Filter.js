@@ -365,7 +365,6 @@ const styles = StyleSheet.create({
         padding:'5%', 
         marginBottom: '3%',
         textAlign: 'center',
-        textTransform: 'capitalize',
       },
       cardImage:{
         width: '100%',

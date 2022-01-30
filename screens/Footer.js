@@ -54,9 +54,7 @@ const Footer = ()  => {
                 name='home' 
                 size={30} 
                 color='#20b2aa'
-                onPress={() => {
-                navigation.navigate('HomeScreen')
-                }}/>
+                onPress={() => {navigation.navigate('HomeScreen')}}/>
             </TouchableOpacity>
 
             {/* Second Icon: If owner, Create Place Form. Else, trip-planning form */}
