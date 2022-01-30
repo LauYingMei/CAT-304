@@ -225,8 +225,11 @@ const Place = () => {
             }
                 
             else
-                await updatePlace(data, placeID)
-            navigation.pop(1)
+                {
+                    await updatePlace(data, placeID)
+                    navigation.pop(1)
+                }
+            
             navigation.replace("PlaceDisplay",
                 { placeID: placeID })
         }
