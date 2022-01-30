@@ -68,8 +68,6 @@ handleRegister = () => {
     }
     )
     .catch(error => alert(error.message))
-
- // addNewUser(auth.currentUser?.email,ContactNo,role,userName);
  
 }
 
