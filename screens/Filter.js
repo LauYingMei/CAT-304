@@ -57,7 +57,7 @@ const Filter = ()  => {
         }
 
         //Category and State are chosen
-        else if(categoryTabChosen != "All" && ratingTabChosen != "All"){
+        else if(categoryTabChosen != "All" && stateTabChosen != "All"){
             setFilterCount(2);
             var docRef = db.collection('Place').where("category", "==",categoryTabChosen);
         }
@@ -260,7 +260,7 @@ const Filter = ()  => {
     
 
     return (
-        <SafeAreaView style={{height: windowHeight, width: windowWidth, backgroundColor:'rgb(200,247,197)'}}>
+        <SafeAreaView style={{height: "100%", width: windowWidth, backgroundColor:'rgb(200,247,197)'}}>
             <View style={{flexDirection: 'row', marginTop: "3%"}}>
                 <TouchableOpacity 
                     onPress={() => navigation.goBack()} 
