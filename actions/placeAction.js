@@ -463,6 +463,19 @@ export async function addNewTripList(data, tripName, StartDate, EndDate) {
 export async function removeTripList(tripID) {
 
     var doc = await db.collection("users").doc(auth.currentUser?.uid).collection("TripLists").doc(tripID)
+    
+    // delete TripPlace in subcollection of "TripLists"
+    var internalEvent = doc.collection("TripPlace")
+    internalEvent.get().then((querySnapshot) => {
+        querySnapshot.forEach((doc1) => {
+            internalEvent.doc(doc1.id).delete().then(() => {
+                console.log('Trip place of', tripID, ' from internal is deleted by: ', auth.currentUser?.uid);
+            }).catch((error) => {
+                console.log("Error removing internal event: ", error(message))
+            })
+        })
+    })
+    
     doc.delete()
         .then(() => {
             console.log('Trip', tripID, 'is deleted by: ', auth.currentUser?.uid)
@@ -473,3 +486,4 @@ export async function removeTripList(tripID) {
             console.log("Remove trip unsuccesslly")
         })
 }
+
