@@ -44,7 +44,7 @@ import {
     BackHandler, 
     LogBox
 } from 'react-native'
-import { roundToNearestMinutes } from 'date-fns';
+
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
